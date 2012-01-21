@@ -1,2 +1,2 @@
-scalac -classpath ./lib/lwjgl.jar src/lwjgl.scala
+fsc -classpath ./lib/lwjgl.jar src/lwjgl.scala
 scala -classpath lib/lwjgl.jar -Djava.library.path=./lib Main
