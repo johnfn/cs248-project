@@ -3,6 +3,7 @@ import opengl.{Display,GL11,DisplayMode}
 import GL11._
 import input._
 import math._
+import Keyboard._
 
 object Main{
   val GAME_TITLE = "My Game"
@@ -10,28 +11,134 @@ object Main{
   val width = 640
   val height = 480
 
-  val player = new Player(0,0);
+  val player = new Player(100, 100, 16, 16);
+  val map = new Map(0, 0, 20, 20)
 
   var finished = false
 
+  trait controllable extends Entity{
+    def control() = {
+      var rx = 0
+      var ry = 0
 
-  class Player(nx:Float,ny:Float){
-    var x:Float = nx
-    var y:Float = ny
-    var z:Float = 1.0f
+      if(isKeyDown(KEY_I)) ry += 1
+      if(isKeyDown(KEY_K)) ry -= 1
+      if(isKeyDown(KEY_J)) rx -= 1
+      if(isKeyDown(KEY_L)) rx += 1
 
-    def applyPos {
-        glTranslatef(x,y,z)
+    }
+  }
+
+  class Manager() {
+    var entities:List[Entity] = List()
+
+    def get(entity_type:String):List[Entity] = {
+      entities.filter(e => e.traits.contains(entity_type))
+    }
+  }
+
+  abstract class Entity(var x:Float, var y:Float, var width:Float, var height:Float) {
+    var vx:Float = 0
+    var vy:Float = 0
+    var traits:List[String] = List("update", "render")
+
+    def touchesPoint(_x:Float, _y:Float):Boolean = {
+      x <= _x && _x <= x + width && y <= _y && _y <= y + height
+    }
+
+    def touchesEntity(other:Entity):Boolean = {
+       ( touchesPoint(other.x, other.y)
+      || touchesPoint(other.x, other.y + other.height)
+      || touchesPoint(other.x + other.width, other.y)
+      || touchesPoint(other.x + other.width, other.y + other.height))
+    }
+
+    def render;
+    def update;
+    /* Overridden in stuff like Map to be more accurate */
+    def collidesWith(other:Entity):Boolean = {
+      assert(other.width == width)
+      assert(other.height == height)
+
+      touchesEntity(other)
     }
 
     def draw = {
-      glColor3f(1, 0, 0)
+      glPushMatrix()
+      glTranslatef(x, y, 0)
+      render
+      glPopMatrix()
+    }
+  }
+
+  class Tile(x:Float, y:Float, width:Float, height:Float, t:Float) extends Entity(x, y, width, height) {
+    override def update() = {}
+
+    override def render = {
+      glColor3f(0.0f, t, 1.0f)
       glBegin(GL_QUADS)
-      glVertex3f(-1.0f, z, -1.0f)
-      glVertex3f(-1.0f, z,  1.0f)
-      glVertex3f( 1.0f, z,  1.0f)
-      glVertex3f( 1.0f, z, -1.0f)
+      glVertex3f(0.0f, 0.0f, 0.0f)
+      glVertex3f(0.0f, height, 0.0f)
+      glVertex3f(width, height, 0.0f)
+      glVertex3f(width, 0.0f, 0.0f)
       glEnd()
+    }
+
+    override def collidesWith(other:Entity):Boolean = {
+      t == 0 && touchesEntity(other)
+    }
+
+  }
+
+  class Map(x:Float, y:Float, width:Float, height:Float) extends Entity(x, y, width, height) {
+    var data:Array[Array[Int]] = Array.ofDim[Int](width.toInt, height.toInt).zipWithIndex.map {case (elem, i) => if (i == 2) elem.map((e) => 0) else elem.map((e) => 1)}
+    var tiles:Array[Tile] = data.zipWithIndex.map{ case (line, i) => line.zipWithIndex.map{ case (elem, j) => new Tile(i * 16, j * 16, 16, 16, elem.toFloat)}}.reduce(_ ++ _)
+
+    override def draw = {
+      tiles.map(e => e.draw)
+    }
+
+    override def render() = {}
+    override def update() = {}
+
+    override def collidesWith(e:Entity):Boolean = {
+      tiles.count(_.collidesWith(e)) > 0
+    }
+  }
+
+  class Player(var _x:Float, var _y:Float, width:Float, height:Float) extends Entity(_x, _y, width, height){
+    def render = {
+      glColor3f(1.0f,1.0f,1.0f)
+
+      glBegin(GL_QUADS)
+      glVertex2f(0, 0)
+      glVertex2f(0, height)
+      glVertex2f(width, height)
+      glVertex2f(width, 0)
+      glEnd()
+    }
+    def update = {} //...
+
+    //just so I can pass in Map.
+    def hak(m:Map) = {
+      var ry = 0
+      var rx = 0
+
+      // keys are IKJL for up down left right
+
+      if(isKeyDown(KEY_I)) ry += 1
+      if(isKeyDown(KEY_K)) ry -= 1
+      if(isKeyDown(KEY_J)) rx -= 1
+      if(isKeyDown(KEY_L)) rx += 1
+
+      x += rx;
+      y += ry;
+
+      if (m.collidesWith(this)) {
+        println("Yepp")
+        x -= rx;
+        y -= ry;
+      }
     }
   }
 
@@ -50,18 +157,15 @@ object Main{
   }
 
   def init(fullscreen:Boolean){
-
-    println("init Display")
     Display.setTitle(GAME_TITLE)
     Display.setFullscreen(fullscreen)
     Display.setVSyncEnabled(true)
     Display.setDisplayMode(new DisplayMode(width,height))
     Display.create
 
-    println("init gl")
-    glEnable(GL_DEPTH_TEST);
-    glEnable(GL_LIGHTING)
-    glEnable(GL_LIGHT0)
+    //glDisable(GL_DEPTH_TEST) //This may annoy me in the future.
+    //glEnable(GL_LIGHTING)
+    //glEnable(GL_LIGHT0)
     adjustcam
   }
 
@@ -71,17 +175,13 @@ object Main{
   }
 
   def adjustcam(){
-    //val v = Display.getDisplayMode.getWidth.toFloat/Display.getDisplayMode.getHeight.toFloat
-    val v = 1.0f
-    val width = 10
-    val height = 10
-    printf("v:%f",v)
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity
-    //0, width, height
-    glOrtho(0, width, 0, height, -1, 100);
-    //glTranslatef(0.0f,0.0f, 6.0f);                 // Move Left 1.5 Units And Into The Screen 6.0
+    glOrtho(0, width, height, 0, -1, 1);
+
     glMatrixMode(GL_MODELVIEW)
+    glLoadIdentity()
+    glViewport(0, 0, width, height)
   }
 
   def cleanup(){
@@ -89,72 +189,24 @@ object Main{
   }
 
   def run(){
-    while(!finished){
+    while(!(isKeyDown(KEY_ESCAPE) || Display.isCloseRequested)) {
       Display.update
 
-      logic
       render
 
       Display.sync(FRAMERATE)
-
-      println(finished)
     }
   }
 
   def logic(){
-      // in scala we can locally import all methods from Keyboard.
-      import Keyboard._
-
-    if(isKeyDown(KEY_ESCAPE))
-      finished = true
-    if(Display.isCloseRequested)
-      finished = true
-
-    // rx and rx store our keyboard input as direction
-    var ry = 0
-    var rx = 0
-
-    // keys are IKJL for up down left right
-
-    if(isKeyDown(KEY_I))
-      ry += 1
-    if(isKeyDown(KEY_K))
-      ry -= 1
-    if(isKeyDown(KEY_J))
-      rx -= 1
-    if(isKeyDown(KEY_L))
-      rx += 1
-
-    player.x += rx;
-    player.y += ry;
-    /*
-    // this makes the direction relative to the camera position
-    // it is a simple rotation matrix you may know from linear algebra
-    val ax = rx*cos(-rotation.toRadians)-ry*sin(-rotation.toRadians)
-    val ay = rx*sin(-rotation.toRadians)+ry*cos(-rotation.toRadians)
-
-    player.x += 0.1f*ax.toFloat
-    player.y += 0.1f*ay.toFloat
-    */
-
-    // this rotates our camera around the center
   }
 
   def render(){
-    glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glLoadIdentity
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    glTranslatef(0,0,-20)
-    glRotatef(-70,1,0,0)
+    player.hak(map)
 
-    glPushMatrix
-    player.applyPos
-    //rotate the player just for fun
+    map.draw
     player.draw
-    glPopMatrix
-
-    //without background, motion is not visible
-    // a green grid is nice and retro
-    glColor3f(0,1,0)
   }
 }
