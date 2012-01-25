@@ -11,8 +11,9 @@ object Main{
   val width = 640
   val height = 480
 
-  val player = new Player(100, 100, 16, 16);
+  val player = new Player(100, 100, 16, 16)
   val map = new Map(0, 0, 20, 20)
+  val manager = new Manager()
 
   var finished = false
 
@@ -35,12 +36,31 @@ object Main{
     def get(entity_type:String):List[Entity] = {
       entities.filter(e => e.traits.contains(entity_type))
     }
+
+    def one(entity_type:String):Entity = {
+      val list:List[Entity] = get(entity_type)
+      assert(list.length == 1)
+
+      list(0)
+    }
+
+    def add(entity:Entity):Unit = {
+      entities = entities :+ entity
+    }
+
+    def update_all():Unit = {
+      get("update").map(_.update(this))
+    }
+
+    def draw_all():Unit = {
+      get("draw").sortBy(_.depth).foreach(_.draw)
+    }
   }
 
   abstract class Entity(var x:Float, var y:Float, var width:Float, var height:Float) {
     var vx:Float = 0
     var vy:Float = 0
-    var traits:List[String] = List("update", "render")
+    var traits:List[String] = List("update", "draw")
 
     def touchesPoint(_x:Float, _y:Float):Boolean = {
       x <= _x && _x <= x + width && y <= _y && _y <= y + height
@@ -54,7 +74,9 @@ object Main{
     }
 
     def render;
-    def update;
+    def update(m:Manager);
+    def depth:Int;
+
     /* Overridden in stuff like Map to be more accurate */
     def collidesWith(other:Entity):Boolean = {
       assert(other.width == width)
@@ -72,7 +94,7 @@ object Main{
   }
 
   class Tile(x:Float, y:Float, width:Float, height:Float, t:Float) extends Entity(x, y, width, height) {
-    override def update() = {}
+    override def update(m:Manager) = {}
 
     override def render = {
       glColor3f(0.0f, t, 1.0f)
@@ -84,14 +106,19 @@ object Main{
       glEnd()
     }
 
+    override def depth:Int = 5;
+
     override def collidesWith(other:Entity):Boolean = {
       t == 0 && touchesEntity(other)
     }
-
   }
 
   class Map(x:Float, y:Float, width:Float, height:Float) extends Entity(x, y, width, height) {
-    var data:Array[Array[Int]] = Array.ofDim[Int](width.toInt, height.toInt).zipWithIndex.map {case (elem, i) => if (i == 2) elem.map((e) => 0) else elem.map((e) => 1)}
+    traits = List("update", "draw", "map")
+    var data:Array[Array[Int]] = Array.ofDim[Int](width.toInt, height.toInt).zipWithIndex.map {case (elem, i) => elem.map((e) => 1)}
+    for (j <- 0 until width.toInt) {
+      data(j)(15) = 0
+    }
     var tiles:Array[Tile] = data.zipWithIndex.map{ case (line, i) => line.zipWithIndex.map{ case (elem, j) => new Tile(i * 16, j * 16, 16, 16, elem.toFloat)}}.reduce(_ ++ _)
 
     override def draw = {
@@ -99,7 +126,8 @@ object Main{
     }
 
     override def render() = {}
-    override def update() = {}
+    override def update(m:Manager) = {}
+    override def depth:Int = 5;
 
     override def collidesWith(e:Entity):Boolean = {
       tiles.count(_.collidesWith(e)) > 0
@@ -107,6 +135,7 @@ object Main{
   }
 
   class Player(var _x:Float, var _y:Float, width:Float, height:Float) extends Entity(_x, _y, width, height){
+    val speed = 5
     def render = {
       glColor3f(1.0f,1.0f,1.0f)
 
@@ -117,26 +146,28 @@ object Main{
       glVertex2f(width, 0)
       glEnd()
     }
-    def update = {} //...
 
-    //just so I can pass in Map.
-    def hak(m:Map) = {
-      var ry = 0
+    override def depth:Int = 99;
+
+    def update(m:Manager) = {
+      val map = manager.one("map")
+      var ry = 5
       var rx = 0
 
       // keys are IKJL for up down left right
 
-      if(isKeyDown(KEY_I)) ry += 1
-      if(isKeyDown(KEY_K)) ry -= 1
-      if(isKeyDown(KEY_J)) rx -= 1
-      if(isKeyDown(KEY_L)) rx += 1
+      if(isKeyDown(KEY_I)) ry -= speed
+      if(isKeyDown(KEY_K)) ry += speed
+      if(isKeyDown(KEY_J)) rx -= speed
+      if(isKeyDown(KEY_L)) rx += speed
 
       x += rx;
-      y += ry;
-
-      if (m.collidesWith(this)) {
-        println("Yepp")
+      if (map.collidesWith(this)) {
         x -= rx;
+      }
+
+      y += ry;
+      if (map.collidesWith(this)) {
         y -= ry;
       }
     }
@@ -167,6 +198,9 @@ object Main{
     //glEnable(GL_LIGHTING)
     //glEnable(GL_LIGHT0)
     adjustcam
+
+    manager.add(player)
+    manager.add(map)
   }
 
   def gameOver() {
@@ -192,21 +226,12 @@ object Main{
     while(!(isKeyDown(KEY_ESCAPE) || Display.isCloseRequested)) {
       Display.update
 
-      render
+      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+      manager.update_all()
+      manager.draw_all()
 
       Display.sync(FRAMERATE)
     }
-  }
-
-  def logic(){
-  }
-
-  def render(){
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    player.hak(map)
-
-    map.draw
-    player.draw
   }
 }
