@@ -4,6 +4,7 @@ import GL11._
 import input._
 import math._
 import Keyboard._
+import scala.util.control.Breaks._
 
 object Main{
   val GAME_TITLE = "My Game"
@@ -29,6 +30,12 @@ object Main{
 
     }
   }
+
+  // I'll probably never use these  >_> <_< <_>
+  def any(l:List[Boolean]) = l contains true
+  def all(l:List[Boolean]) = !(l contains false)
+
+  class Point(x: Int, y: Int)
 
   class Manager() {
     var entities:List[Entity] = List()
@@ -119,6 +126,9 @@ object Main{
     for (j <- 0 until width.toInt) {
       data(j)(15) = 0
     }
+
+    data(12)(14) = 0
+
     var tiles:Array[Tile] = data.zipWithIndex.map{ case (line, i) => line.zipWithIndex.map{ case (elem, j) => new Tile(i * 16, j * 16, 16, 16, elem.toFloat)}}.reduce(_ ++ _)
 
     override def draw = {
@@ -129,8 +139,17 @@ object Main{
     override def update(m:Manager) = {}
     override def depth:Int = 5;
 
-    override def collidesWith(e:Entity):Boolean = {
-      tiles.count(_.collidesWith(e)) > 0
+    override def collidesWith(e:Entity):Boolean = tiles.count(_.collidesWith(e)) > 0
+    override def touchesPoint(p:Point):Boolean =
+  }
+
+  def sign(num:Int):Int = {
+    if (num > 0) {
+      1
+    } else if (num < 0) {
+      -1
+    } else {
+      0
     }
   }
 
@@ -149,27 +168,39 @@ object Main{
 
     override def depth:Int = 99;
 
+    def onGround(m:Manager):Boolean = {
+      val gameMap = manager.one("map")
+      (_x.toInt to (_x.toInt + width.toInt)).map(new Point(_, _y.toInt + height.toInt + 1)).map(gameMap.touchesPoint(_)).reduce(_ || _)
+    }
+
     def update(m:Manager) = {
       val map = manager.one("map")
       var ry = 5
       var rx = 0
 
-      // keys are IKJL for up down left right
+      if (isKeyDown(KEY_W)) ry -= speed
+      if (isKeyDown(KEY_S)) ry += speed
+      if (isKeyDown(KEY_A)) rx -= speed
+      if (isKeyDown(KEY_D)) rx += speed
 
-      if(isKeyDown(KEY_I)) ry -= speed
-      if(isKeyDown(KEY_K)) ry += speed
-      if(isKeyDown(KEY_J)) rx -= speed
-      if(isKeyDown(KEY_L)) rx += speed
-
-      x += rx;
-      if (map.collidesWith(this)) {
-        x -= rx;
+      if (isKeyDown(KEY_SPACE) && onGround(m)) {
+        println("gotcha")
       }
 
-      y += ry;
-      if (map.collidesWith(this)) {
-        y -= ry;
+      val dx = sign(rx)
+      val dy = sign(ry)
+
+      while (rx != 0 && !map.collidesWith(this)) {
+        x += dx
+        rx -= dx
       }
+      x -= dx
+
+      while (ry != 0 && !map.collidesWith(this)) {
+        y += dy;
+        ry -= dy
+      }
+      y -= dy
     }
   }
 
