@@ -35,7 +35,11 @@ object Main{
   def any(l:List[Boolean]) = l contains true
   def all(l:List[Boolean]) = !(l contains false)
 
-  class Point(x: Int, y: Int)
+  class Point(val x: Int, val y: Int) {
+    override def toString() = {
+      "Point (x : " + x + ", y : " + y + ")"
+    }
+  }
 
   class Manager() {
     var entities:List[Entity] = List()
@@ -64,20 +68,20 @@ object Main{
     }
   }
 
-  abstract class Entity(var x:Float, var y:Float, var width:Float, var height:Float) {
-    var vx:Float = 0
-    var vy:Float = 0
+  abstract class Entity(var x:Int, var y:Int, var width:Int, var height:Int) {
+    var vx:Int = 0
+    var vy:Int = 0
     var traits:List[String] = List("update", "draw")
 
-    def touchesPoint(_x:Float, _y:Float):Boolean = {
-      x <= _x && _x <= x + width && y <= _y && _y <= y + height
+    def touchesPoint(p:Point):Boolean = {
+      x <= p.x && p.x <= x + width && y <= p.y && p.y <= y + height
     }
 
     def touchesEntity(other:Entity):Boolean = {
-       ( touchesPoint(other.x, other.y)
-      || touchesPoint(other.x, other.y + other.height)
-      || touchesPoint(other.x + other.width, other.y)
-      || touchesPoint(other.x + other.width, other.y + other.height))
+       ( touchesPoint(new Point(other.x, other.y))
+      || touchesPoint(new Point(other.x, other.y + other.height))
+      || touchesPoint(new Point(other.x + other.width, other.y))
+      || touchesPoint(new Point(other.x + other.width, other.y + other.height)))
     }
 
     def render;
@@ -100,7 +104,7 @@ object Main{
     }
   }
 
-  class Tile(x:Float, y:Float, width:Float, height:Float, t:Float) extends Entity(x, y, width, height) {
+  class Tile(x:Int, y:Int, width:Int, height:Int, t:Int) extends Entity(x, y, width, height) {
     override def update(m:Manager) = {}
 
     override def render = {
@@ -113,14 +117,16 @@ object Main{
       glEnd()
     }
 
+    def isWall:Boolean = t == 0
+
     override def depth:Int = 5;
 
     override def collidesWith(other:Entity):Boolean = {
-      t == 0 && touchesEntity(other)
+      isWall && touchesEntity(other)
     }
   }
 
-  class Map(x:Float, y:Float, width:Float, height:Float) extends Entity(x, y, width, height) {
+  class Map(x:Int, y:Int, width:Int, height:Int) extends Entity(x, y, width, height) {
     traits = List("update", "draw", "map")
     var data:Array[Array[Int]] = Array.ofDim[Int](width.toInt, height.toInt).zipWithIndex.map {case (elem, i) => elem.map((e) => 1)}
     for (j <- 0 until width.toInt) {
@@ -129,7 +135,7 @@ object Main{
 
     data(12)(14) = 0
 
-    var tiles:Array[Tile] = data.zipWithIndex.map{ case (line, i) => line.zipWithIndex.map{ case (elem, j) => new Tile(i * 16, j * 16, 16, 16, elem.toFloat)}}.reduce(_ ++ _)
+    var tiles:Array[Tile] = data.zipWithIndex.map{ case (line, i) => line.zipWithIndex.map{ case (elem, j) => new Tile(i * 16, j * 16, 16, 16, elem)}}.reduce(_ ++ _)
 
     override def draw = {
       tiles.map(e => e.draw)
@@ -140,7 +146,9 @@ object Main{
     override def depth:Int = 5;
 
     override def collidesWith(e:Entity):Boolean = tiles.count(_.collidesWith(e)) > 0
-    override def touchesPoint(p:Point):Boolean =
+    override def touchesPoint(p:Point):Boolean = {
+      tiles.count((t) => t.touchesPoint(p) && t.isWall) > 0
+    }
   }
 
   def sign(num:Int):Int = {
@@ -153,7 +161,7 @@ object Main{
     }
   }
 
-  class Player(var _x:Float, var _y:Float, width:Float, height:Float) extends Entity(_x, _y, width, height){
+  class Player(_x:Int, _y:Int, width:Int, height:Int) extends Entity(_x, _y, width, height){
     val speed = 5
     def render = {
       glColor3f(1.0f,1.0f,1.0f)
@@ -170,7 +178,7 @@ object Main{
 
     def onGround(m:Manager):Boolean = {
       val gameMap = manager.one("map")
-      (_x.toInt to (_x.toInt + width.toInt)).map(new Point(_, _y.toInt + height.toInt + 1)).map(gameMap.touchesPoint(_)).reduce(_ || _)
+      (x to (x + width)).map(new Point(_, y + height + 3)).map(gameMap.touchesPoint(_)).reduce(_ || _)
     }
 
     def update(m:Manager) = {
