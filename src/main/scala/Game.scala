@@ -1,3 +1,5 @@
+package edu.stanford.cs248.project
+
 import org.lwjgl._
 import opengl.{Display,GL11,DisplayMode}
 import GL11._
