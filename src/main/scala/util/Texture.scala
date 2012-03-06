@@ -16,13 +16,14 @@ class TextureGray(rcname: String) extends Texture(rcname) {
     val res = 
       ByteBuffer.allocateDirect(width*height).order(ByteOrder.nativeOrder())
     
-    val argbary = img.getRGB(0, 0, width, height, null, 0, width)
+    val ary = img
+      .getRGB(0, 0, width, height, null, 0, width)
+      .map(_.asInstanceOf[Byte])
     
     // write to byte buffer flipped
     // x and y in opengl coordinates
     for(y <- (height-1) to 0 by -1; x <- 0 until width) {
-      val grayByte : Byte = argbary(y*width+x).asInstanceOf[Byte]
-      res.put(grayByte)
+      res.put(ary(y*width+x))
     }
     
     res
