@@ -8,13 +8,14 @@ import math._
 import Keyboard._
 import scala.util.control.Breaks._
 
-object Main{
+object Main {
   val GAME_TITLE = "My Game"
   val FRAMERATE = 60
   val width = 1280
   val height = 720
   
   val cam = new Camera()
+  val manager = new EntityManager()
   
   def main(args:Array[String]) = {
     var fullscreen = false
@@ -44,6 +45,8 @@ object Main{
     }
     
     glViewport(0, 0, width, height)
+    
+    manager.add(new Level("test"))
   }
 
   def gameOver() = {
@@ -52,6 +55,7 @@ object Main{
   }
   
   def updateGame() = {
+    manager.updateAll()
   }
   
   def renderGame() = {
@@ -59,6 +63,7 @@ object Main{
     
     cam.loadGLMatrices()
     
+    manager.renderAll()
   }  
 
   def run() = {

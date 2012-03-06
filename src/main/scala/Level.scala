@@ -8,13 +8,23 @@ import org.lwjgl.opengl._
 
 class Level(val name: String) extends Entity 
 {
+  val heightImg = ImageIO.read(getClass.getResource("/levels/"+name+"_h.png"))
+
   val xSize = heightImg.getWidth()
   val ySize = heightImg.getHeight()
   
-  val heightImg = ImageIO.read(getClass.getResource("levels/"+name+"_h.png"))
-  
   var vertexVboId : Int = 0
   var indexVboId : Int = 0
+  
+  val nVerts = xSize*ySize  
+  val nQuads = (xSize-1)*(ySize-1)
+      
+  val verPosSize = java.lang.Short.SIZE/8 * 3
+  val normalSize = java.lang.Float.SIZE/8 * 3
+  
+  val strideSize = verPosSize + normalSize
+  
+  val elemIdSize = java.lang.Integer.SIZE/8
   
   override def doInitGL() = {
     import ARBBufferObject._
@@ -32,13 +42,6 @@ class Level(val name: String) extends Entity
     def imageByte(x: Int, y: Int) : Byte = {
       heightPixs(clamp(y, ySize-1)*xSize + clamp(x, xSize-1))
     }
-    
-    val verPosSize = java.lang.Short.SIZE/8 * 3
-    val normalSize = java.lang.Float.SIZE/8 * 3
-    
-    val strideSize = verPosSize + normalSize
-    
-    val nVerts = xSize*ySize
     
     // get a vbo ids
     vertexVboId = glGenBuffersARB()
@@ -77,26 +80,55 @@ class Level(val name: String) extends Entity
     glUnmapBufferARB(GL_ARRAY_BUFFER_ARB)
     glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0)
     
-    val nQuads = (xSize-1)*(ySize-1)*4
-    
     // bind and allocate for 
     glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, indexVboId)
     glBufferDataARB(GL_ELEMENT_ARRAY_BUFFER_ARB, 
-      nQuads*java.lang.Integer.SIZE/8, GL_STATIC_DRAW_ARB)
+      nQuads*4*elemIdSize, GL_STATIC_DRAW_ARB)
     
     val iBuf = glMapBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB,
-      GL_WRITE_ONLY_ARB, nQuads*java.lang.Integer.SIZE/8, null)
+      GL_WRITE_ONLY_ARB, nQuads*4*elemIdSize, null)
     
     def elemId(x: Int, y: Int) = y*xSize + x
     for(y <- 0 until ySize-1; x <- 0 until xSize-1) {
       // NOTE: making sure this is CCW winding pointing in the +z
-      vBuf.putInt(elemId(x  , y  ))
-      vBuf.putInt(elemId(x+1, y  ))
-      vBuf.putInt(elemId(x+1, y+1))
-      vBuf.putInt(elemId(x  , y+1))
+      iBuf.putInt(elemId(x  , y  ))
+      iBuf.putInt(elemId(x+1, y  ))
+      iBuf.putInt(elemId(x+1, y+1))
+      iBuf.putInt(elemId(x  , y+1))
     }
     
     glUnmapBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB)
     glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, 0)
+  }
+  
+  override def renderGL() = {
+    import GL11._
+    import GL12._
+    import ARBBufferObject._
+    import ARBVertexBufferObject._
+
+    // enable relevant client states
+    glEnableClientState(GL_VERTEX_ARRAY)
+    glEnableClientState(GL_NORMAL_ARRAY)
+    
+    // bind vertex vbo and index vbo
+    glBindBufferARB(GL_ARRAY_BUFFER_ARB, vertexVboId)
+    glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, indexVboId)
+    
+    // set pointers to data
+    glVertexPointer(3, GL_SHORT, strideSize, 0)
+    glNormalPointer(GL_FLOAT, strideSize, verPosSize)
+    
+    // bind element data
+    glDrawElements(GL_QUADS, nQuads, GL_UNSIGNED_INT, 0)
+    
+    // unbind buffers
+    glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0)
+    glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, 0)
+    
+    // disable client states
+    glDisableClientState(GL_VERTEX_ARRAY)
+    glDisableClientState(GL_NORMAL_ARRAY)
+    
   }
 }

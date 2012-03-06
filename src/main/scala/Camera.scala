@@ -14,7 +14,7 @@ class Camera {
   // Spherical coordinates with center as the origin
   var camR = 3.0f
   var camTheta = (30.0/180.0*Pi).asInstanceOf[Float]
-  var camPhi = 0.0f
+  var camPhi = (5.0/4.0*Pi).asInstanceOf[Float]
   
   def loadGLMatrices() {
     GL11.glMatrixMode(GL11.GL_PROJECTION)

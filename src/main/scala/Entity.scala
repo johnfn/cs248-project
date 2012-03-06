@@ -14,3 +14,15 @@ trait Entity {
   def renderGL() = {}
   def deleteGL() = {}
 }
+
+class EntityManager {
+  var entities: List[Entity] = List()
+  
+  def add(e: Entity) = {
+    e.checkInit()
+    entities = e :: entities
+  }
+  
+  def updateAll() = entities.foreach(_.update())
+  def renderAll() = entities.foreach(_.renderGL())
+}
