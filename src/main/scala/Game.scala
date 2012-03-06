@@ -45,6 +45,7 @@ object Main {
     }
     
     glViewport(0, 0, width, height)
+    glEnable(GL_DEPTH_TEST)
     
     Mouse.setGrabbed(true)
     

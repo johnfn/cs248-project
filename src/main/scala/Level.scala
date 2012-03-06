@@ -19,10 +19,11 @@ class Level(val name: String) extends Entity
   val nVerts = xSize*ySize  
   val nQuads = (xSize-1)*(ySize-1)
       
-  val verPosSize = java.lang.Short.SIZE/8 * 3
+  val verPosSize = java.lang.Float.SIZE/8 * 3
   val normalSize = java.lang.Float.SIZE/8 * 3
+  val colorSize  = java.lang.Byte.SIZE/8 * 3
   
-  val strideSize = verPosSize + normalSize
+  val strideSize = verPosSize + normalSize + colorSize
   
   val elemIdSize = java.lang.Integer.SIZE/8
   
@@ -35,11 +36,11 @@ class Level(val name: String) extends Entity
     // This is okay, as the image is grayscale.
     val heightPixs = heightImg
       .getRGB(0, 0, xSize, ySize, null, 0, xSize)
-      .map(_.asInstanceOf[Byte])
+      .map(_ & 0xff)
       
     // emulate CLAMP for byte retrieval
     def clamp(value: Int, valueMax: Int) = min(max(0, value), valueMax) 
-    def imageByte(x: Int, y: Int) : Byte = {
+    def imageByte(x: Int, y: Int) = {
       heightPixs(clamp(y, ySize-1)*xSize + clamp(x, xSize-1))
     }
     
@@ -62,9 +63,9 @@ class Level(val name: String) extends Entity
     for(y <- 0 until ySize; x <- 0 until xSize) {
       // vertex position
       vBuf
-        .putShort(x.asInstanceOf[Short])
-        .putShort(y.asInstanceOf[Short])
-        .putShort(imageByte(x,y))
+        .putFloat(x)
+        .putFloat(y)
+        .putFloat((imageByte(x,y)).asInstanceOf[Float]*0.3f)
       
       val dx = imageByte(x+1, y) - imageByte(x-1, y)
       val dy = imageByte(x, y+1) - imageByte(x, y-1)
@@ -74,6 +75,12 @@ class Level(val name: String) extends Entity
         .putFloat(-dx)
         .putFloat(-dy)
         .putFloat(1)
+      
+      // store color bytes just for testing
+      vBuf
+        .put(imageByte(x,y).asInstanceOf[Byte])
+        .put(imageByte(x,y).asInstanceOf[Byte])
+        .put(imageByte(x,y).asInstanceOf[Byte])
     }
     
     // unmap and unbind for vertices vbo
@@ -110,17 +117,19 @@ class Level(val name: String) extends Entity
     // enable relevant client states
     glEnableClientState(GL_VERTEX_ARRAY)
     glEnableClientState(GL_NORMAL_ARRAY)
+    glEnableClientState(GL_COLOR_ARRAY)
     
     // bind vertex vbo and index vbo
     glBindBufferARB(GL_ARRAY_BUFFER_ARB, vertexVboId)
     glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, indexVboId)
     
     // set pointers to data
-    glVertexPointer(3, GL_SHORT, strideSize, 0)
+    glVertexPointer(3, GL_FLOAT, strideSize, 0)
     glNormalPointer(GL_FLOAT, strideSize, verPosSize)
+    glColorPointer(3, GL_UNSIGNED_BYTE, strideSize, verPosSize+normalSize)
     
     // bind element data
-    glDrawElements(GL_QUADS, nQuads, GL_UNSIGNED_INT, 0)
+    glDrawElements(GL_QUADS, nQuads*4, GL_UNSIGNED_INT, 0)
     
     // unbind buffers
     glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0)
@@ -129,6 +138,7 @@ class Level(val name: String) extends Entity
     // disable client states
     glDisableClientState(GL_VERTEX_ARRAY)
     glDisableClientState(GL_NORMAL_ARRAY)
+    glDisableClientState(GL_COLOR_ARRAY)
     
   }
 }
