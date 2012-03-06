@@ -14,7 +14,7 @@ object Main {
   val width = 1280
   val height = 720
   
-  val cam = new Camera()
+  val camera = new Camera()
   val manager = new EntityManager()
   
   def main(args:Array[String]) = {
@@ -46,6 +46,9 @@ object Main {
     
     glViewport(0, 0, width, height)
     
+    Mouse.setGrabbed(true)
+    
+    manager.add(camera)
     manager.add(new Level("test"))
   }
 
@@ -61,7 +64,7 @@ object Main {
   def renderGame() = {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     
-    cam.loadGLMatrices()
+    camera.loadGLMatrices()
     
     manager.renderAll()
   }  
