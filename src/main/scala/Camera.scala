@@ -13,7 +13,7 @@ class Camera extends Entity {
   var centerZ = 0.0f
   
   // Spherical coordinates with center as the origin
-  var camR = 5f
+  var camR = 10f
   var camTheta = (60.0/180.0*Pi).asInstanceOf[Float]
   var camPhi = (5.0/4.0*Pi).asInstanceOf[Float]
   
