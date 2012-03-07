@@ -8,12 +8,12 @@ import scala.math._
 
 class Camera extends Entity { 
   
-  var centerX = 100.0f
-  var centerY = 100.0f
+  var centerX = 0.0f
+  var centerY = 0.0f
   var centerZ = 0.0f
   
   // Spherical coordinates with center as the origin
-  var camR = 127f
+  var camR = 5f
   var camTheta = (60.0/180.0*Pi).asInstanceOf[Float]
   var camPhi = (5.0/4.0*Pi).asInstanceOf[Float]
   
@@ -44,10 +44,10 @@ class Camera extends Entity {
       val mouseSensitivity = 0.005
       
       camTheta += (dy*mouseSensitivity*yInvert).asInstanceOf[Float]
-      camPhi   += (dx*mouseSensitivity).asInstanceOf[Float]
+      camPhi   += -(dx*mouseSensitivity).asInstanceOf[Float]
       
       // limit movement of camera
-      camTheta = max(min(camTheta, (Pi/2).asInstanceOf[Float]), 0.001f)
+      camTheta = max(min(camTheta, (Pi-0.001f).asInstanceOf[Float]), 0.001f)
       camPhi   = (camPhi % (2*Pi)).asInstanceOf[Float] 
       
       println("Camera (r, t, p) = (%f, %f, %f)".format(camR, camTheta, camPhi))

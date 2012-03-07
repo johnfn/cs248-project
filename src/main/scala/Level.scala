@@ -6,12 +6,14 @@ import scala.math._
 
 import org.lwjgl.opengl._
 
+import edu.stanford.cs248.project.util._
+
 class Level(val name: String) extends Entity 
 {
-  val heightImg = ImageIO.read(getClass.getResource("/levels/"+name+"_h.png"))
+  val heightMap = new ImageMapGrayscale("/levels/"+name+"_h.png")
 
-  val xSize = heightImg.getWidth()
-  val ySize = heightImg.getHeight()
+  val xSize = heightMap.xSize
+  val ySize = heightMap.ySize
   
   var vertexVboId : Int = 0
   var indexVboId : Int = 0
@@ -26,23 +28,12 @@ class Level(val name: String) extends Entity
   val strideSize = verPosSize + normalSize + colorSize
   
   val elemIdSize = java.lang.Integer.SIZE/8
+    
+  def height(x: Int, y: Int) : Float = heightMap.valueAt(x, y)*0.03f
   
   override def doInitGL() = {
     import ARBBufferObject._
     import ARBVertexBufferObject._
-    
-    // Get image pixels
-    // This just gets the right-most 8 bits, corresponding to the blue channel
-    // This is okay, as the image is grayscale.
-    val heightPixs = heightImg
-      .getRGB(0, 0, xSize, ySize, null, 0, xSize)
-      .map(_ & 0xff)
-      
-    // emulate CLAMP for byte retrieval
-    def clamp(value: Int, valueMax: Int) = min(max(0, value), valueMax) 
-    def imageByte(x: Int, y: Int) = {
-      heightPixs(clamp(y, ySize-1)*xSize + clamp(x, xSize-1))
-    }
     
     // get a vbo ids
     vertexVboId = glGenBuffersARB()
@@ -65,10 +56,10 @@ class Level(val name: String) extends Entity
       vBuf
         .putFloat(x)
         .putFloat(y)
-        .putFloat((imageByte(x,y)).asInstanceOf[Float]*0.3f)
+        .putFloat(height(x,y))
       
-      val dx = imageByte(x+1, y) - imageByte(x-1, y)
-      val dy = imageByte(x, y+1) - imageByte(x, y-1)
+      val dx = height(x+1, y) - height(x-1, y)
+      val dy = height(x, y+1) - height(x, y-1)
       
       // store normal vector. not normalized so we can retrieve slopes
       vBuf
@@ -78,9 +69,9 @@ class Level(val name: String) extends Entity
       
       // store color bytes just for testing
       vBuf
-        .put(imageByte(x,y).asInstanceOf[Byte])
-        .put(imageByte(x,y).asInstanceOf[Byte])
-        .put(imageByte(x,y).asInstanceOf[Byte])
+        .put(heightMap.valueAt(x,y).asInstanceOf[Byte])
+        .put(heightMap.valueAt(x,y).asInstanceOf[Byte])
+        .put(heightMap.valueAt(x,y).asInstanceOf[Byte])
     }
     
     // unmap and unbind for vertices vbo

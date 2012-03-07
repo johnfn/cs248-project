@@ -50,7 +50,7 @@ object Main {
     Mouse.setGrabbed(true)
     
     manager.add(camera)
-    manager.add(new Level("test"))
+    manager.add(new Level("level1"))
   }
 
   def gameOver() = {
