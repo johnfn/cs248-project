@@ -6,7 +6,7 @@ import org.lwjgl.input.Mouse
 
 import scala.math._
 
-class Protagonist(level: Level) extends Entity { 
+class Protagonist(level: Level, camera: Camera) extends Entity { 
   
   var x = 100.0f
   var y = 100.0f
