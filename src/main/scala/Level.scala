@@ -30,6 +30,15 @@ class Level(val name: String) extends Entity
   
   val zScale = 0.03f
   
+  def inBounds(x: Double, y: Double) =
+    x > -0.5 && y > -0.5 && x < xSize-0.5 && y < ySize-0.5
+  
+  def height(x: Double, y: Double) = {
+    val clampedX = round(max(min(xSize-0.5, x), -0.5))
+    val clampedY = round(max(min(ySize-0.5, y), -0.5))
+    heightMap.valueAt(clampedX, clampedY)
+  }
+  
   override def doInitGL() = {
     import ARBBufferObject._
     import ARBVertexBufferObject._
