@@ -1,3 +1,5 @@
 project
 target
 lib
+*.class
+*.DS_Store
