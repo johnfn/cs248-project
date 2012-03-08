@@ -29,7 +29,10 @@ class LevelModel(val name: String) extends VBOModel {
   val drawMode = GL11.GL_QUADS
   
   val zScale = 0.03f
-  
+
+  def inBounds(x: Double, y: Double) =
+    x > -0.5 && y > -0.5 && x < xSize-0.5 && y < ySize-0.5
+
   def height(x: Double, y: Double) = {
     val clampedX = round(max(min(xSize-0.5, x), -0.5))
     val clampedY = round(max(min(ySize-0.5, y), -0.5))
@@ -98,10 +101,10 @@ class LevelModel(val name: String) extends VBOModel {
 class Level(val name: String) extends VBOModelEntity
 {
   val model = new LevelModel(name)
-  import model._
+  
+  def height(x: Double, y: Double) = model.height(x, y)
+  def inBounds(x: Double, y: Double) = model.inBounds(x, y)
+  def zScale = model.zScale
   
   override def traits() = List("level", "render", "update")
-  
-  def inBounds(x: Double, y: Double) =
-    x > -0.5 && y > -0.5 && x < xSize-0.5 && y < ySize-0.5
 }
