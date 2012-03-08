@@ -15,11 +15,7 @@ class Protagonist() extends Entity {
   var y = 0.0f
   var z = 0.0f
 
-  override def doInitGL() = {
-  }
-
-  override def renderGL() = {
-  	println ("Render")
+  def renderVerticies(vs: Array[Vertex]) = {
     import GL11._
     import GL12._
     import ARBBufferObject._
@@ -27,8 +23,6 @@ class Protagonist() extends Entity {
 
     val nVerts = 4
     val elemIdSize = java.lang.Integer.SIZE / 8
-
-    val floorCorners = Array((-0.5f, -0.5f), (0.5f, -0.5f), (0.5f, 0.5f), (-0.5f, 0.5f))
 
     val vertexVboId = glGenBuffersARB()
     val indexVboId  = glGenBuffersARB()
@@ -40,16 +34,9 @@ class Protagonist() extends Entity {
     val vBuf = glMapBufferARB(GL_ARRAY_BUFFER_ARB,
       GL_WRITE_ONLY_ARB, Vertex.strideSize*nVerts, null)
 
-    // --- set up coordinates for protagonist
+	vs.foreach { _.insertIntoBuf(vBuf) }
 
-	floorCorners.foreach { case(dx, dy) =>
-		Vertex(x+dx, y+dy, z,
-			  0, 0, 1,
-			  250, 0, 0,
-			  dx+0.5f, dy+0.5f)
-			  .insertIntoBuf(vBuf)
-	}
-
+    // --------
 
     // unmap and unbind for vertices vbo
     glUnmapBufferARB(GL_ARRAY_BUFFER_ARB)
@@ -97,5 +84,21 @@ class Protagonist() extends Entity {
     glDisableClientState(GL_VERTEX_ARRAY)
     glDisableClientState(GL_NORMAL_ARRAY)
     glDisableClientState(GL_COLOR_ARRAY)
+  }
+
+  override def doInitGL() = {
+  }
+
+  override def renderGL() = {
+    val floorCorners = Array((-0.5f, -0.5f), (0.5f, -0.5f), (0.5f, 0.5f), (-0.5f, 0.5f))
+
+    val vs:Array[Vertex] = floorCorners.map { case(dx, dy) =>
+		Vertex(x + dx, y + dy, z,
+			  0, 0, 1,
+			  250, 0, 0,
+			  dx + 0.5f, dy + 0.5f)
+		}
+
+	renderVerticies(vs)
   }
 }
