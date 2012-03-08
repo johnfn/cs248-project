@@ -8,6 +8,9 @@ import org.lwjgl.opengl._
 
 import edu.stanford.cs248.project.util._
 
+import org.lwjgl._
+import input._
+import Keyboard._
 import scala.math._
 
 class Protagonist() extends Entity {
@@ -15,6 +18,9 @@ class Protagonist() extends Entity {
   var y = 0.0f
   var z = 0.0f
 
+  override def traits() = List("protagonist", "render", "update")
+
+  //TODO: Should eventually move this into util.
   def renderVerticies(vs: Array[Vertex]) = {
     import GL11._
     import GL12._
@@ -98,6 +104,18 @@ class Protagonist() extends Entity {
 			  250, 0, 0,
 			  dx + 0.5f, dy + 0.5f)
 		}
+
+	var newx = x
+	var newy = y
+
+	if (isKeyDown(KEY_W)) newx += 1
+	if (isKeyDown(KEY_S)) newx -= 1
+
+	if (isKeyDown(KEY_A)) newy += 1
+	if (isKeyDown(KEY_D)) newy -= 1
+
+	x = newx
+	y = newy
 
 	renderVerticies(vs)
   }
