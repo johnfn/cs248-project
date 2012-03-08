@@ -1,14 +1,101 @@
 package edu.stanford.cs248.project
 
-import org.lwjgl.opengl.GL11
-import org.lwjgl.util.glu.Project
-import org.lwjgl.input.Mouse
+import javax.imageio.ImageIO
 
 import scala.math._
 
-class Protagonist(level: Level, camera: Camera) extends Entity { 
-  
-  var x = 100.0f
-  var y = 100.0f
-  var z = 100.0f
+import org.lwjgl.opengl._
+
+import edu.stanford.cs248.project.util._
+
+import scala.math._
+
+class Protagonist() extends Entity {
+  var x = 0.0f
+  var y = 0.0f
+  var z = 0.0f
+
+  override def doInitGL() = {
+  }
+
+  override def renderGL() = {
+  	println ("Render")
+    import GL11._
+    import GL12._
+    import ARBBufferObject._
+    import ARBVertexBufferObject._
+
+    val nVerts = 4
+    val elemIdSize = java.lang.Integer.SIZE / 8
+
+    val floorCorners = Array((-0.5f, -0.5f), (0.5f, -0.5f), (0.5f, 0.5f), (-0.5f, 0.5f))
+
+    val vertexVboId = glGenBuffersARB()
+    val indexVboId  = glGenBuffersARB()
+
+    glBindBufferARB(GL_ARRAY_BUFFER_ARB, vertexVboId)
+    glBufferDataARB(GL_ARRAY_BUFFER_ARB, Vertex.strideSize*nVerts,
+      GL_STATIC_DRAW_ARB)
+
+    val vBuf = glMapBufferARB(GL_ARRAY_BUFFER_ARB,
+      GL_WRITE_ONLY_ARB, Vertex.strideSize*nVerts, null)
+
+    // --- set up coordinates for protagonist
+
+	floorCorners.foreach { case(dx, dy) =>
+		Vertex(x+dx, y+dy, z,
+			  0, 0, 1,
+			  250, 0, 0,
+			  dx+0.5f, dy+0.5f)
+			  .insertIntoBuf(vBuf)
+	}
+
+
+    // unmap and unbind for vertices vbo
+    glUnmapBufferARB(GL_ARRAY_BUFFER_ARB)
+    glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0)
+
+    // bind and allocate for
+    glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, indexVboId)
+    glBufferDataARB(GL_ELEMENT_ARRAY_BUFFER_ARB,
+      nVerts*elemIdSize, GL_STATIC_DRAW_ARB)
+    //TODO change other part of this code
+
+    val iBuf = glMapBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB,
+      GL_WRITE_ONLY_ARB, nVerts*elemIdSize, null)
+
+    (0 until nVerts).map(iBuf.putInt(_))
+
+    glUnmapBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB)
+    glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, 0)
+
+
+	// --- do actual rendering
+
+    // enable relevant client states
+    glEnableClientState(GL_VERTEX_ARRAY)
+    glEnableClientState(GL_NORMAL_ARRAY)
+    glEnableClientState(GL_COLOR_ARRAY)
+
+    // bind vertex vbo and index vbo
+    glBindBufferARB(GL_ARRAY_BUFFER_ARB, vertexVboId)
+    glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, indexVboId)
+
+    // set pointers to data
+    glVertexPointer(3, GL_FLOAT, Vertex.strideSize, Vertex.posOffset)
+    glNormalPointer(GL_FLOAT, Vertex.strideSize, Vertex.norOffset)
+    glColorPointer(3, GL_UNSIGNED_BYTE, Vertex.strideSize, Vertex.colOffset)
+
+    // bind element data
+    glDrawElements(GL_QUADS, nVerts, GL_UNSIGNED_INT, 0)
+
+    // unbind buffers
+    glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0)
+    glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, 0)
+
+    // disable client states
+    glDisableClientState(GL_VERTEX_ARRAY)
+    glDisableClientState(GL_NORMAL_ARRAY)
+    glDisableClientState(GL_COLOR_ARRAY)
+  }
 }
