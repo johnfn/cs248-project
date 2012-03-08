@@ -95,6 +95,28 @@ class Protagonist() extends Entity {
   override def doInitGL() = {
   }
 
+  override def update(m:EntityManager) = {
+    // This is a common enough idiom that it may be worth abstracting out.
+    val lv:Level = m.entities.filter(_.traits.contains("level")).head.asInstanceOf[Level]
+
+	var newx = x
+	var newy = y
+	var newz = z
+
+	if (isKeyDown(KEY_W)) newx += 1
+	if (isKeyDown(KEY_S)) newx -= 1
+
+	if (isKeyDown(KEY_A)) newy += 1
+	if (isKeyDown(KEY_D)) newy -= 1
+
+	if (lv.inBounds(newx, newy)) {
+		if (lv.height(newx, newy) <= newz) {
+			x = newx;
+			y = newy;
+		}
+	}
+  }
+
   override def renderGL() = {
     val floorCorners = Array((-0.5f, -0.5f), (0.5f, -0.5f), (0.5f, 0.5f), (-0.5f, 0.5f))
 
@@ -104,18 +126,6 @@ class Protagonist() extends Entity {
 			  250, 0, 0,
 			  dx + 0.5f, dy + 0.5f)
 		}
-
-	var newx = x
-	var newy = y
-
-	if (isKeyDown(KEY_W)) newx += 1
-	if (isKeyDown(KEY_S)) newx -= 1
-
-	if (isKeyDown(KEY_A)) newy += 1
-	if (isKeyDown(KEY_D)) newy -= 1
-
-	x = newx
-	y = newy
 
 	renderVerticies(vs)
   }

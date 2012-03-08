@@ -30,6 +30,8 @@ class Level(val name: String) extends Entity
 
   val zScale = 0.03f
 
+  override def traits() = List("level", "render", "update")
+
   def inBounds(x: Double, y: Double) =
     x > -0.5 && y > -0.5 && x < xSize-0.5 && y < ySize-0.5
 
