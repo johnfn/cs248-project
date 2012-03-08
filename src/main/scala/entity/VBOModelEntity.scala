@@ -5,10 +5,9 @@ import org.lwjgl.opengl._
 trait VBOModelEntity extends Entity { 
   def model: VBOModel
   
-  // origin of the model in WORLD SPACE
-  def x = 0
-  def y = 0
-  def z = 0
+  def x : Float
+  def y : Float
+  def z : Float
   
   // TODO: add stuff about rotation, shear, etc., etc.
   override def renderGL() = {
