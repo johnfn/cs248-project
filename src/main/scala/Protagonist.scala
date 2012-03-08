@@ -6,6 +6,7 @@ import scala.math._
 
 import org.lwjgl.opengl._
 
+import edu.stanford.cs248.project.entity._
 import edu.stanford.cs248.project.util._
 
 import org.lwjgl._

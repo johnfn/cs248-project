@@ -8,6 +8,8 @@ import math._
 import Keyboard._
 import scala.util.control.Breaks._
 
+import edu.stanford.cs248.project.entity._
+
 object Main {
   val GAME_TITLE = "My Game"
   val FRAMERATE = 60
