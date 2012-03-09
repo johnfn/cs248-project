@@ -1,4 +1,4 @@
-package edu.stanford.cs248.project
+package edu.stanford.cs248.project.entity
 
 trait Entity {
   def update(m: EntityManager) = {}
@@ -27,6 +27,7 @@ class EntityManager {
   def updateAll() = {
     entities.filter(_.traits.contains("update")).foreach(_.update(this))
   }
+
   def renderAll() = {
     entities.filter(_.traits.contains("render")).foreach(_.renderGL())
   }

@@ -26,8 +26,6 @@ class LevelModel(val name: String) extends VBOModel {
   val nVerts = nQuads*4
   val nIdxs  = nVerts // just one index per vertex
 
-  val drawMode = GL11.GL_QUADS
-
   val zScale = 0.03f
 
   def inBounds(x: Double, y: Double) =

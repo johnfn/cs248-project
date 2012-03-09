@@ -13,14 +13,19 @@ import input._
 import Keyboard._
 import scala.math._
 
-class CubeModel(x: Float, y: Float, z: Float) extends VBOModel {
+class SquareModel(val x: Float, val y: Float, val z: Float, val color: List[Int]) extends VBOModel {
+
+	val nVerts : Int = 4
+	val nIdxs : Int = 4 // number of vertex indices in index buffer
+	val name = "cubemodel"
+
 	override def populateVerBuffer(vBuf: ByteBuffer) = {
 	    val floorCorners = Array((-0.5f, -0.5f), (0.5f, -0.5f), (0.5f, 0.5f), (-0.5f, 0.5f))
 
 	    floorCorners.foreach { case(dx, dy) =>
 			Vertex(x + dx, y + dy, z,
 				  0, 0, 1,
-				  0, 0, 250, //blue
+				  color(0), color(1), color(2),
 				  dx + 0.5f, dy + 0.5f).insertIntoBuf(vBuf)
 			}
 	}
@@ -30,11 +35,8 @@ class CubeModel(x: Float, y: Float, z: Float) extends VBOModel {
 	}
 }
 
-class Crystal() extends VBOModelEntity {
-	val x : Float = 25.0f
-	val y : Float = 25.0f
-	val z : Float = 1.0f
-	val model = new CubeModel(x, y, z)
+class Crystal(val x: Float, val y: Float, val z: Float) extends VBOModelEntity {
+	val model = new SquareModel(x, y, z, List(0, 0, 250))
 
 	override def traits() = List("render", "update", "crystal")
 }

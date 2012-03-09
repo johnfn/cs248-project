@@ -11,22 +11,22 @@ trait VBOModel {
   // get vbo ids
   val vertexVboId = glGenBuffersARB()
   val indexVboId  = glGenBuffersARB()
-  
+
   // implementing classes need to define the # of vertices and elements
   def name: String
   def nVerts : Int
   def nIdxs : Int // number of vertex indices in index buffer
-  def drawMode : Int 
-  
+  def drawMode : Int = GL11.GL_QUADS
+
   var initialized = false
-  
+
   val idxSize = java.lang.Integer.SIZE/8
-  
+
   // two abstract methods that need to be implemented by any models
   def populateVerBuffer(vBuf: ByteBuffer)
   def populateIdxBuffer(iBuf: ByteBuffer)
-  
-  def init() = {  
+
+  def init() = {
     // bind and allocate vbo for vertices
     glBindBufferARB(GL_ARRAY_BUFFER_ARB, vertexVboId)
     glBufferDataARB(GL_ARRAY_BUFFER_ARB, Vertex.strideSize*nVerts,
@@ -35,9 +35,9 @@ trait VBOModel {
     // Get the VRAM mapped vertex buffer
     val vBuf = glMapBufferARB(GL_ARRAY_BUFFER_ARB,
       GL_WRITE_ONLY_ARB, Vertex.strideSize*nVerts, null)
-    
+
     populateVerBuffer(vBuf)
-      
+
     // unmap and unbind for vertices vbo
     glUnmapBufferARB(GL_ARRAY_BUFFER_ARB)
     glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0)
@@ -45,8 +45,8 @@ trait VBOModel {
     // bind and allocate for
     glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, indexVboId)
     glBufferDataARB(GL_ELEMENT_ARRAY_BUFFER_ARB,
-      nIdxs*idxSize, GL_STATIC_DRAW_ARB)    
-      
+      nIdxs*idxSize, GL_STATIC_DRAW_ARB)
+
     val iBuf = glMapBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB,
       GL_WRITE_ONLY_ARB, nIdxs*idxSize, null)
 
@@ -57,18 +57,18 @@ trait VBOModel {
 
     println("Loaded VBO %s with %d vertices.".format(name, nVerts))
   }
-    
+
   // Will draw what's in the VBO. User needs to specify matrices beforehand
   def drawCall() = {
     import GL11._
     import GL12._
-    
+
     // initialize if never been initialized
     if(!initialized) {
       init()
       initialized = true
     }
-    
+
     // enable relevant client states
     glEnableClientState(GL_VERTEX_ARRAY)
     glEnableClientState(GL_NORMAL_ARRAY)
@@ -95,5 +95,5 @@ trait VBOModel {
     glDisableClientState(GL_NORMAL_ARRAY)
     glDisableClientState(GL_COLOR_ARRAY)
   }
-  
+
 }
