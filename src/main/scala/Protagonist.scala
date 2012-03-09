@@ -93,6 +93,17 @@ class Protagonist(val ghost: Ghost) extends VBOModelEntity {
     ghost.setPosition(newx, newy, c.z)
   }
 
+  def teleport(m: EntityManager, lv: Level) = {
+    if (isKeyDown(KEY_Z)) {
+      val zAtGhost = lv.height(ghost.x, ghost.y)
+      if (zAtGhost <= ghost.z) {
+        x = ghost.x
+        y = ghost.y
+        z = ghost.z
+      }
+    }
+  }
+
   override def update(m:EntityManager) = {
     // This is a common enough idiom that it may be worth abstracting out.
     val lv:Level = m.entities.filter(_.traits.contains("level")).head.asInstanceOf[Level]
@@ -101,6 +112,7 @@ class Protagonist(val ghost: Ghost) extends VBOModelEntity {
     if (ticks % 5 == 0) {
       move(lv)
       moveGhost(m, lv)
+      teleport(m, lv)
     }
   }
 }
