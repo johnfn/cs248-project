@@ -154,6 +154,6 @@ class Protagonist() extends Entity {
 			  dx + 0.5f, dy + 0.5f)
 		}
 
-	renderVerticies(vs)
+  	renderVerticies(vs)
   }
 }

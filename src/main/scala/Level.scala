@@ -22,12 +22,12 @@ class LevelModel(val name: String) extends VBOModel {
   val xNormalQuads = deltaXMap.ary.count(_ != 0) // quads facing the x axis
   val yNormalQuads = deltaYMap.ary.count(_ != 0)
   val nQuads = xNormalQuads + yNormalQuads + zNormalQuads
-  
+
   val nVerts = nQuads*4
   val nIdxs  = nVerts // just one index per vertex
-  
+
   val drawMode = GL11.GL_QUADS
-  
+
   val zScale = 0.03f
 
   def inBounds(x: Double, y: Double) =
@@ -38,7 +38,7 @@ class LevelModel(val name: String) extends VBOModel {
     val clampedY = round(max(min(ySize-0.5, y), -0.5))
     heightMap.valueAt(clampedX.toInt, clampedY.toInt)*zScale
   }
-  
+
   def populateVerBuffer(vBuf: ByteBuffer) = {
     // insert one vertex per pixel in the heightmap
     // note in this case, the top-left of the image corresponds to (0,0)
@@ -93,23 +93,22 @@ class LevelModel(val name: String) extends VBOModel {
       }
     }
   }
-  
+
   def populateIdxBuffer(iBuf: ByteBuffer) =
     (0 until nIdxs).foreach(i => iBuf.putInt(i))
 }
 
-class Level(val name: String) extends VBOModelEntity
-{
+class Level(val name: String) extends VBOModelEntity {
   val model = new LevelModel(name)
-  
+
   // origin of the model in WORLD SPACE
   var x = 0f
   var y = 0f
   var z = 0f
-  
+
   def height(x: Double, y: Double) = model.height(x, y)
   def inBounds(x: Double, y: Double) = model.inBounds(x, y)
   def zScale = model.zScale
-  
+
   override def traits() = List("level", "render", "update")
 }

@@ -35,6 +35,7 @@ object Main {
 
   def init(fullscreen:Boolean) = {
     var prot:Protagonist = new Protagonist()
+    var crys:Crystal = new Crystal()
 
     Display.setTitle(GAME_TITLE)
     Display.setFullscreen(fullscreen)
@@ -56,6 +57,7 @@ object Main {
     manager.add(camera)
     manager.add(new Level("level1"))
     manager.add(prot)
+    manager.add(crys)
   }
 
   def gameOver() = {
