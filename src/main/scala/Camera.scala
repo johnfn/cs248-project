@@ -56,7 +56,7 @@ class Camera extends Entity {
       camTheta = max(min(camTheta, (Pi-0.001f).asInstanceOf[Float]), 0.001f)
       camPhi   = (camPhi % (2*Pi)).asInstanceOf[Float]
 
-      println("Camera (r, t, p) = (%f, %f, %f)".format(camR, camTheta, camPhi))
+      //println("Camera (r,t,p) = (%f,%f,%f)".format(camR, camTheta, camPhi))
     }
   }
 }

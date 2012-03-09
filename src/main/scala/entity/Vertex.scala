@@ -29,4 +29,6 @@ object Vertex {
   val texOffset = colOffset + colSize
 
   val strideSize = texOffset + texSize
+  
+  println("Vertex in VBO size: %d bytes".format(strideSize))
 }

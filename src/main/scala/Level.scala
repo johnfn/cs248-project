@@ -1,6 +1,6 @@
 package edu.stanford.cs248.project
 
-import java.nio.ByteBuffer
+import java.nio._
 import javax.imageio.ImageIO
 
 import scala.math._
@@ -112,4 +112,25 @@ class Level(val name: String) extends VBOModelEntity
   def zScale = model.zScale
   
   override def traits() = List("level", "render", "update")
+  
+  def initGL() = {
+    import GL11._
+    
+    // set one directional light
+    val lightId = GL_LIGHT0
+    
+    glEnable(GL_LIGHTING);
+    
+    val buf = ByteBuffer
+      .allocateDirect(16).order(ByteOrder.nativeOrder()).asFloatBuffer()
+    
+    buf.put(Array(0.5f, 0.5f, 0.5f, 1.0f)).flip()
+    glLight(lightId, GL_AMBIENT,  buf)
+    buf.put(Array(0.5f, 0.5f, 0.5f, 1.0f)).flip()
+    glLight(lightId, GL_DIFFUSE,  buf)
+    buf.put(Array(0.5f, 0.5f, 0.5f, 1.0f)).flip()
+    glLight(lightId, GL_SPECULAR, buf)
+    buf.put(Array(0.0f, 0.0f, 400.0f*zScale, 1.0f)).flip()
+    glLight(lightId, GL_POSITION, buf)
+  }
 }

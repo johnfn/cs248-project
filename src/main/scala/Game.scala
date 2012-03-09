@@ -18,6 +18,7 @@ object Main {
 
   val camera = new Camera()
   val manager = new EntityManager()
+  val shader = new Shader("phong")
 
   def main(args:Array[String]) = {
     var fullscreen = false
@@ -47,10 +48,17 @@ object Main {
       println("OpenGL context doesn't support VBOs.")
       System.exit(-1)
     }
+    
+    if(!shader.init()) {
+      println("""Shader "%s" initialization failed""".format(shader.name))
+      System.exit(-1)
+    } else {
+      shader.use()
+    }
 
     glViewport(0, 0, width, height)
     glEnable(GL_DEPTH_TEST)
-
+    
     Mouse.setGrabbed(true)
 
     manager.add(camera)
