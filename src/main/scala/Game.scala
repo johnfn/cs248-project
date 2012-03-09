@@ -29,6 +29,7 @@ object Main {
     }
 
     init(fullscreen)
+    addObjects()
     run()
     gameOver()
   }
@@ -51,10 +52,16 @@ object Main {
 
     Mouse.setGrabbed(true)
 
+  }
+
+  def addObjects() = {
+    val ghost = new Ghost()
+
     manager.add(camera)
     manager.add(new Level("level1"))
-    manager.add(new Crystal(1.0f, 1.0f, 0.0f))
-    manager.add(new Protagonist())
+    manager.add(new Crystal(3.0f, 3.0f, 0.0f))
+    manager.add(ghost)
+    manager.add(new Protagonist(ghost))
   }
 
   def gameOver() = {
