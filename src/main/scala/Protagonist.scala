@@ -15,12 +15,14 @@ import Keyboard._
 import scala.math._
 
 class Protagonist() extends Entity {
-  val JUMP_HEIGHT = 2.0f
-  val GRAVITY = 0.2f
+  val JUMP_HEIGHT = .2f
+  val GRAVITY = 0.02f
 
   var x = 0.0f
   var y = 0.0f
   var z = 0.0f
+
+  var vz = 0.0f
 
   override def traits() = List("protagonist", "render", "update")
 
@@ -104,34 +106,42 @@ class Protagonist() extends Entity {
     val lv:Level = m.entities.filter(_.traits.contains("level")).head.asInstanceOf[Level]
     val onGround:Boolean = (z <= lv.height(x, y))
 
-	var newx = x
-	var newy = y
-	var newz = z
+  	var newx = x
+  	var newy = y
+  	var newz = z
 
-	if (onGround) {
-		if (isKeyDown(KEY_SPACE) && onGround) {
-			newz += JUMP_HEIGHT
-		} else {
-			newz = lv.height(x, y)
-		}
-	} else {
-		newz -= GRAVITY
-	}
+  	if (onGround) {
+      vz = 0
+  		if (isKeyDown(KEY_SPACE)) {
+  			vz += JUMP_HEIGHT
+  		} else {
+  			newz = lv.height(x, y)
+  		}
 
-	if (isKeyDown(KEY_W)) newx += 1
-	if (isKeyDown(KEY_S)) newx -= 1
+  	} else {
+      vz -= GRAVITY
+    }
 
-	if (isKeyDown(KEY_A)) newy += 1
-	if (isKeyDown(KEY_D)) newy -= 1
+		newz += vz
 
-	if (lv.inBounds(newx, newy)) {
-		if (lv.height(newx, newy) <= newz) {
-			x = newx;
-			y = newy;
-		}
-	}
+    if (newz <= lv.height(x, y)) {
+      newz = lv.height(x, y)
+    }
 
-	z = newz;
+  	if (isKeyDown(KEY_W)) newx += 1
+  	if (isKeyDown(KEY_S)) newx -= 1
+
+  	if (isKeyDown(KEY_A)) newy += 1
+  	if (isKeyDown(KEY_D)) newy -= 1
+
+  	if (lv.inBounds(newx, newy)) {
+  		if (lv.height(newx, newy) - newz <= .5) {
+  			x = newx
+  			y = newy
+  		}
+  	}
+
+  	z = newz
   }
 
   override def renderGL() = {
