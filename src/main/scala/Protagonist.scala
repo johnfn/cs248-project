@@ -66,11 +66,11 @@ class Protagonist(val ghost: Ghost) extends VBOModelEntity {
       newz = lv.height(x, y)
     }
 
-    if (isKeyDown(KEY_W)) newx += 1
-    if (isKeyDown(KEY_S)) newx -= 1
+    if (isKeyDown(KEY_W)) newx += 1.0f
+    if (isKeyDown(KEY_S)) newx -= 1.0f
 
-    if (isKeyDown(KEY_A)) newy += 1
-    if (isKeyDown(KEY_D)) newy -= 1
+    if (isKeyDown(KEY_A)) newy += 1.0f
+    if (isKeyDown(KEY_D)) newy -= 1.0f
 
     if (lv.inBounds(newx, newy)) {
       if (lv.height(newx, newy) - newz <= .5) {
