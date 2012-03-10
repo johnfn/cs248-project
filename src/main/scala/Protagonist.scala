@@ -96,7 +96,8 @@ class Protagonist(val ghost: Ghost) extends VBOModelEntity {
   def teleport(m: EntityManager, lv: Level) = {
     if (isKeyDown(KEY_Z)) {
       val zAtGhost = lv.height(ghost.x, ghost.y)
-      if (zAtGhost <= ghost.z) {
+      // Don't teleport onto something higher than you are && ensure we're on the map still.
+      if (zAtGhost <= ghost.z && lv.inBounds(ghost.x, ghost.y)) {
         x = ghost.x
         y = ghost.y
         z = ghost.z
