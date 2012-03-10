@@ -26,14 +26,15 @@ class TextureGray(rcpath: String) extends Texture(rcpath) {
       res.put(ary(y*width+x))
     }
     
+    res.rewind()
     res
   }
 }
 
 class TextureARGB(rcpath: String) extends Texture(rcpath) {
-  val glBytes : IntBuffer = {
+  val glBytes : ByteBuffer = {
     val res = 
-      ByteBuffer.allocateDirect(width*height).order(ByteOrder.nativeOrder())
+      ByteBuffer.allocateDirect(width*height*4).order(ByteOrder.nativeOrder())
     
     val argbary = img.getRGB(0, 0, width, height, null, 0, width)
     
@@ -45,7 +46,8 @@ class TextureARGB(rcpath: String) extends Texture(rcpath) {
       res.put((argb >>> 24).asInstanceOf[Byte])
     }
     
-    res.asIntBuffer()
+    res.rewind()
+    res
   }
 }
 

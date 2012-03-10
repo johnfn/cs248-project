@@ -66,7 +66,7 @@ object Main {
     val ghost = new Ghost()
 
     manager.add(camera)
-    manager.add(new Level("level1"))
+    manager.add(new Level("level1", shader))
     manager.add(new Crystal(3.0f, 3.0f, 0.0f))
     manager.add(ghost)
     manager.add(new Protagonist(ghost))

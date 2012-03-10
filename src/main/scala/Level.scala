@@ -10,7 +10,9 @@ import org.lwjgl.opengl._
 import edu.stanford.cs248.project.util._
 import edu.stanford.cs248.project.entity._
 
-class LevelModel(val name: String) extends VBOModel {
+class LevelModel(val name: String, shader: Shader) 
+  extends TexturedVBOModel("terrain", shader) 
+{
   val heightMap = new ImageMapGrayscale("/levels/"+name+"_h.png")
   val deltaXMap = heightMap.deltaXMap
   val deltaYMap = heightMap.deltaYMap
@@ -73,7 +75,7 @@ class LevelModel(val name: String) extends VBOModel {
         Vertex(
           xf+dx, yf+dy, zf,
           0, 0, 1,
-          floorS0+(dx+0.5f)*texSUnit, (2+dx+0.5f)*texTUnit)
+          floorS0+(dx+0.5f)*texSUnit, (2+dy+0.5f)*texTUnit)
       }
 
       // paint x facing walls
@@ -120,8 +122,8 @@ class LevelModel(val name: String) extends VBOModel {
   def getIndices() = (0 until nVerts)
 }
 
-class Level(val name: String) extends VBOModelEntity {
-  val model = new LevelModel(name)
+class Level(val name: String, shader: Shader) extends VBOModelEntity {
+  val model = new LevelModel(name, shader)
 
   // origin of the model in WORLD SPACE
   var x = 0f

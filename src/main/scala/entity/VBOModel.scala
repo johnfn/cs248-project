@@ -4,6 +4,7 @@ import java.nio.ByteBuffer
 
 import org.lwjgl.opengl._
 
+import edu.stanford.cs248.project._
 import edu.stanford.cs248.project.util._
 
 trait VBOModel {
@@ -88,7 +89,9 @@ trait VBOModel {
     // set pointers to data
     glVertexPointer(3, GL_FLOAT, Vertex.strideSize, Vertex.posOffset)
     glNormalPointer(GL_FLOAT, Vertex.strideSize, Vertex.norOffset)
-
+    
+    additionalPredraw()
+    
     // bind element data
     glDrawElements(drawMode, nIdxs, GL_UNSIGNED_INT, 0)
 
@@ -101,13 +104,16 @@ trait VBOModel {
     glDisableClientState(GL_NORMAL_ARRAY)
   }
 
+  def additionalPredraw() = {}
 }
 
-abstract class TexturedVBOModel(textureName: String) extends VBOModel {
+abstract class TexturedVBOModel(textureName: String, shader: Shader) 
+  extends VBOModel 
+{
   var texId = 0
   def texUnit = 0  
   
-  val tex = new TextureARGB("/textures/terrain.png")
+  val tex = new TextureARGB("/textures/"+textureName+".png")
   
   override def init() = {
     import GL11._
@@ -118,11 +124,27 @@ abstract class TexturedVBOModel(textureName: String) extends VBOModel {
     glActiveTexture(GL_TEXTURE0 + texUnit)
     texId = glGenTextures()
     glBindTexture(GL_TEXTURE_2D, texId)
-    
-    //glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 
-        
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tex.width, tex.height, 0, GL_RGBA,
+      GL_UNSIGNED_BYTE, tex.glBytes)
   }
   
-  override def drawCall() = {
+  override def additionalPredraw() = {
+    import GL11._
+    import GL13._
+    import GL20._
+    
+    // Bind texture
+    glActiveTexture(GL_TEXTURE0 + texUnit)
+    glBindTexture(GL_TEXTURE_2D, texId)
+    glUniform1i(glGetUniformLocation(shader.progId, "difTex"), texUnit)
+    
+    // Bind texture coordinates
+    glEnableVertexAttribArray(glGetAttribLocation(shader.progId, "texcoordIn"))
+    glVertexAttribPointer(glGetAttribLocation(shader.progId, "texcoordIn"),
+      2, GL_FLOAT, false, Vertex.strideSize, Vertex.texOffset)
   }
 }

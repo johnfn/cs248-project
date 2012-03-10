@@ -1,7 +1,11 @@
 //http://www.opengl.org/sdk/docs/tutorials/ClockworkCoders/lighting.php
 
+uniform sampler2D dumTex;
+uniform sampler2D difTex;
+
 varying vec3 N;
-varying vec3 v; 
+varying vec3 v;
+varying vec2 texcoord;
 
 #define MAX_LIGHTS 1 
 
@@ -31,7 +35,9 @@ void main()
       finalColor += Iamb + Idiff + Ispec;
    }
    
-   // write Total Color: 
-   gl_FragColor = gl_FrontLightModelProduct.sceneColor + finalColor; 
+   // write Total Color:
+   gl_FragColor = gl_FrontLightModelProduct.sceneColor + finalColor;
+   //gl_FragColor = vec4(texcoord.s, texcoord.t, 0, 1.0);
+   gl_FragColor = vec4(texture2D(difTex, texcoord).rgb, 1.0);
 }
 
