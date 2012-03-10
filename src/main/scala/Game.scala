@@ -30,13 +30,12 @@ object Main {
     }
 
     init(fullscreen)
+    addObjects()
     run()
     gameOver()
   }
 
   def init(fullscreen:Boolean) = {
-    var prot:Protagonist = new Protagonist()
-
     Display.setTitle(GAME_TITLE)
     Display.setFullscreen(fullscreen)
     Display.setVSyncEnabled(true)
@@ -61,9 +60,16 @@ object Main {
     
     Mouse.setGrabbed(true)
 
+  }
+
+  def addObjects() = {
+    val ghost = new Ghost()
+
     manager.add(camera)
     manager.add(new Level("level1"))
-    manager.add(prot)
+    manager.add(new Crystal(3.0f, 3.0f, 0.0f))
+    manager.add(ghost)
+    manager.add(new Protagonist(ghost))
   }
 
   def gameOver() = {

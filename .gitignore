@@ -1,5 +1,6 @@
 project
 target
 lib
+ignore
 *.class
 *.DS_Store

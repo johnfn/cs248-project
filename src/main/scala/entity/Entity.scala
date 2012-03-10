@@ -24,6 +24,11 @@ class EntityManager {
     entities = e :: entities
   }
 
-  def updateAll() = entities.foreach(_.update(this))
-  def renderAll() = entities.foreach(_.renderGL())
+  def updateAll() = {
+    entities.filter(_.traits.contains("update")).foreach(_.update(this))
+  }
+
+  def renderAll() = {
+    entities.filter(_.traits.contains("render")).foreach(_.renderGL())
+  }
 }

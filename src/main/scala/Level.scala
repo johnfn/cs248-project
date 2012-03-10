@@ -18,17 +18,22 @@ class LevelModel(val name: String) extends VBOModel {
   val xSize = heightMap.xSize
   val ySize = heightMap.ySize
 
-  val zNormalQuads = xSize*ySize
-  val xNormalQuads = deltaXMap.ary.count(_ != 0) // quads facing the x axis
-  val yNormalQuads = deltaYMap.ary.count(_ != 0)
-  val nQuads = xNormalQuads + yNormalQuads + zNormalQuads
-  
-  val nVerts = nQuads*4
-  val nIdxs  = nVerts // just one index per vertex
-  
-  val drawMode = GL11.GL_QUADS
-  
   val zScale = 0.03f
+  
+  var indexCount = 0
+  
+  val texMap = new ImageMapObjMap("/levels/"+name+"_t.png",
+    Map(
+      0x000000->0,
+      0x0000ff->1,
+      0x00ff00->2,
+      0x00ffff->3,
+      0xff0000->4,
+      0xff00ff->5,
+      0xffff00->6,
+      0xffffff->7
+    )
+  )
 
   def inBounds(x: Double, y: Double) =
     x > -0.5 && y > -0.5 && x < xSize-0.5 && y < ySize-0.5
@@ -38,8 +43,8 @@ class LevelModel(val name: String) extends VBOModel {
     val clampedY = round(max(min(ySize-0.5, y), -0.5))
     heightMap.valueAt(clampedX.toInt, clampedY.toInt)*zScale
   }
-  
-  def populateVerBuffer(vBuf: ByteBuffer) = {
+
+  def getVertices() = {
     // insert one vertex per pixel in the heightmap
     // note in this case, the top-left of the image corresponds to (0,0)
     // and x+ and y+ are right and down in the image
@@ -47,6 +52,8 @@ class LevelModel(val name: String) extends VBOModel {
     val floorCorners = Array(
       (-0.5f, -0.5f), (0.5f, -0.5f), (0.5f, 0.5f), (-0.5f, 0.5f))
 
+    var vertVec = new scala.collection.immutable.VectorBuilder[Vertex]()
+      
     for(y <- 0 until ySize; x <- 0 until xSize) {
       val xf = x.asInstanceOf[Float]
       val yf = y.asInstanceOf[Float]
@@ -55,62 +62,76 @@ class LevelModel(val name: String) extends VBOModel {
       val dzdy = deltaYMap.valueAt(x,y)*zScale
 
       val hc = heightMap.valueAt(x,y).asInstanceOf[Byte]
-
+      
+      // get texture "s" coord
+      val texSUnit = 1.0f/8.0f
+      val texTUnit = 1.0f/3.0f
+      
       // paint floor tiles
-      floorCorners.foreach { case(dx, dy) =>
+      val floorS0 = texSUnit*texMap.valueAt(x, y)
+      vertVec ++= floorCorners.map { case(dx, dy) =>
         Vertex(
           xf+dx, yf+dy, zf,
           0, 0, 1,
-          50, 50, 50,
-          dx+0.5f, dy+0.5f)
-          .insertIntoBuf(vBuf)
+          floorS0+(dx+0.5f)*texSUnit, (2+dx+0.5f)*texTUnit)
       }
 
       // paint x facing walls
       if(dzdx != 0) {
         val nx = if(dzdx > 0) -1.0f else 1.0f
-        floorCorners.foreach { case(dy, dz) =>
-          Vertex(
-            xf+0.5f, yf+dy*nx, zf+(dz+0.5f)*dzdx,
-            nx, 0, 0,
-            100, 100, 100,
-            dy+0.5f, (dz+0.5f)*dzdx) // texture coordinates should tile wall
-            .insertIntoBuf(vBuf)
+        val zBot = min(zf, zf+dzdx)
+        val zHeight = abs(dzdx)
+        
+        // use texture of "higher" tile"
+        val texS0 = texSUnit*texMap.valueAt(if(dzdx < 0) x else x+1, y)
+        
+        def drawXWall(tileZBot: Float, tileZHeight: Float, texT0: Float) = {
+          vertVec ++= floorCorners.map { case(dy, dz) =>
+            Vertex(
+              xf+0.5f, yf+dy, tileZBot+(dz+0.5f)*tileZHeight,
+              nx, 0, 0,
+              texS0+(dy+0.5f)*texSUnit, texT0+(dz+0.5f)*texTUnit)
+          }          
         }
+        
+        drawXWall(zBot, zHeight, 0)
       }
 
+      /*
       // paint y facing walls
       if(dzdy != 0) {
         val ny = if(dzdy < 0) -1.0f else 1.0f
-        floorCorners.foreach { case(dx, dz) =>
+        
+        // use texture of "higher" tile"
+        val texS0 = texSUnit*texMap.valueAt(x, if(dzdy < 0) y else x+1)
+        
+        vertVec ++= floorCorners.foreach { case(dx, dz) =>
           Vertex(
             xf+dx*ny, yf+0.5f, zf+(dz+0.5f)*dzdy,
             0, ny, 0,
-            150, 150, 150,
             dx+0.5f, (dz+0.5f)*dzdy) // texture coordinates should tile wall
-            .insertIntoBuf(vBuf)
         }
-      }
+      }*/
     }
+    
+    vertVec.result()
   }
-  
-  def populateIdxBuffer(iBuf: ByteBuffer) =
-    (0 until nIdxs).foreach(i => iBuf.putInt(i))
+
+  def getIndices() = (0 until nVerts)
 }
 
-class Level(val name: String) extends VBOModelEntity
-{
+class Level(val name: String) extends VBOModelEntity {
   val model = new LevelModel(name)
-  
+
   // origin of the model in WORLD SPACE
   var x = 0f
   var y = 0f
   var z = 0f
-  
+
   def height(x: Double, y: Double) = model.height(x, y)
   def inBounds(x: Double, y: Double) = model.inBounds(x, y)
   def zScale = model.zScale
-  
+
   override def traits() = List("level", "render", "update")
   
   def initGL() = {

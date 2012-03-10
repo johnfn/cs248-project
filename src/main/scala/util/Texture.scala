@@ -3,14 +3,14 @@ package edu.stanford.cs248.project.util
 import javax.imageio.ImageIO
 import java.nio.{ByteBuffer, IntBuffer, ByteOrder}
 
-class Texture(val rcname: String) {
-  val img = ImageIO.read(getClass.getResource(rcname))
+class Texture(val rcpath: String) {
+  val img = ImageIO.read(getClass.getResource(rcpath))
   
   val width = img.getWidth()
   val height = img.getHeight()
 }
 
-class TextureGray(rcname: String) extends Texture(rcname) {
+class TextureGray(rcpath: String) extends Texture(rcpath) {
   // one byte per pixel
   val glBytes : ByteBuffer = {
     val res = 
@@ -30,7 +30,7 @@ class TextureGray(rcname: String) extends Texture(rcname) {
   }
 }
 
-class TextureARGB(rcname: String) extends Texture(rcname) {
+class TextureARGB(rcpath: String) extends Texture(rcpath) {
   val glBytes : IntBuffer = {
     val res = 
       ByteBuffer.allocateDirect(width*height).order(ByteOrder.nativeOrder())
