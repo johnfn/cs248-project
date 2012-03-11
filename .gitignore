@@ -4,3 +4,4 @@ lib
 ignore
 *.class
 *.DS_Store
+*.marks

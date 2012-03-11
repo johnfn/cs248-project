@@ -11,7 +11,7 @@ trait Texture {
   import GL11._
   import GL13._
   
-  val texId = glGenTextures()
+  val id = glGenTextures()
   
   def width: Int
   def height: Int
@@ -32,7 +32,7 @@ trait Texture {
   
   def bind(texUnit: Int) = {
     glActiveTexture(GL_TEXTURE0 + texUnit)
-    glBindTexture(GL_TEXTURE_2D, texId)
+    glBindTexture(GL_TEXTURE_2D, id)
   }
 }
 
@@ -48,6 +48,12 @@ class ImageTexture(rcPath: String) extends Texture {
   def dataType = GL_UNSIGNED_BYTE
   
   override def initData = Texture.rgbaGlBytes(img)
+}
+
+class BlankTexture(val width: Int, val height: Int, 
+                   val format: Int, val dataType: Int) 
+  extends Texture
+{
 }
 
 object Texture {
