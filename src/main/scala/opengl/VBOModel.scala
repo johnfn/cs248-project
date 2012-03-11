@@ -113,7 +113,7 @@ abstract class TexturedVBOModel(textureName: String)
   var texId = 0
   def texUnit = 0  
   
-  val tex = new TextureARGB("/textures/"+textureName+".png")
+  val tex = new ImageTexture("/textures/"+textureName+".png")
   
   override def init() = {
     import GL11._
@@ -121,17 +121,7 @@ abstract class TexturedVBOModel(textureName: String)
     import GL30._
     
     super.init()
-    
-    glActiveTexture(GL_TEXTURE0 + texUnit)
-    texId = glGenTextures()
-    glBindTexture(GL_TEXTURE_2D, texId)
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
-    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST)
-    
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tex.width, tex.height, 0, GL_RGBA,
-      GL_UNSIGNED_BYTE, tex.glBytes)
-    //glGenerateMipmap(GL_TEXTURE_2D)
+    tex.init()
   }
   
   override def additionalPredraw(shader: Shader) = {
@@ -139,9 +129,7 @@ abstract class TexturedVBOModel(textureName: String)
     import GL13._
     import GL20._
     
-    // Bind texture
-    glActiveTexture(GL_TEXTURE0 + texUnit)
-    glBindTexture(GL_TEXTURE_2D, texId)
+    tex.bind(texUnit)
     glUniform1i(glGetUniformLocation(shader.progId, "difTex"), texUnit)
     
     // Bind texture coordinates

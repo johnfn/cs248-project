@@ -15,10 +15,12 @@ object screenFbo extends Fbo {
   def fboId = 0
 }
 
-class MrtFbo(nTargets: Int) extends Fbo {
+// Multiple render targets using GL_FLOAT as data type
+class MrtFloatFbo(nTargets: Int) extends Fbo {
   import EXTFramebufferObject._
   
   val fboId = glGenFramebuffersEXT()
+  
   
   
 }
