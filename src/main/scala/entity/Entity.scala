@@ -1,6 +1,6 @@
 package edu.stanford.cs248.project.entity
 
-import edu.stanford.cs248.project._
+import edu.stanford.cs248.project.util._
 
 trait Entity {
   def update(m: EntityManager) = {}

@@ -1,4 +1,4 @@
-package edu.stanford.cs248.project
+package edu.stanford.cs248.project.util
 
 import org.lwjgl.opengl._
 

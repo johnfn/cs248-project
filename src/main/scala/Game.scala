@@ -9,6 +9,7 @@ import Keyboard._
 import scala.util.control.Breaks._
 
 import edu.stanford.cs248.project.entity._
+import edu.stanford.cs248.project.util._
 
 object Main {
   val GAME_TITLE = "My Game"
