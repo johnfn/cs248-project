@@ -1,15 +1,14 @@
 package edu.stanford.cs248.project
 
-import org.lwjgl._
-import opengl.{Display,GL11,DisplayMode, GLContext}
+import org.lwjgl.opengl.{Display,GL11,DisplayMode, GLContext}
+import org.lwjgl.input.Keyboard._
+import org.lwjgl.input._
 import GL11._
-import input._
 import math._
-import Keyboard._
 import scala.util.control.Breaks._
 
 import edu.stanford.cs248.project.entity._
-import edu.stanford.cs248.project.util._
+import edu.stanford.cs248.project.opengl._
 
 object Main {
   val GAME_TITLE = "My Game"
@@ -46,6 +45,11 @@ object Main {
     GLContext.useContext()
     if(!GLContext.getCapabilities().GL_ARB_vertex_buffer_object) {
       println("OpenGL context doesn't support VBOs.")
+      System.exit(-1)
+    }
+    
+    if(!GLContext.getCapabilities().GL_EXT_framebuffer_object) {
+      println("OpenGL context doesn't support FBOs.")
       System.exit(-1)
     }
     

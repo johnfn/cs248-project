@@ -1,7 +1,7 @@
 package edu.stanford.cs248.project.entity
 
 import org.lwjgl.opengl._
-import edu.stanford.cs248.project.util._
+import edu.stanford.cs248.project.opengl._
 
 trait VBOModelEntity extends Entity { 
   def model: VBOModel

@@ -1,4 +1,4 @@
-package edu.stanford.cs248.project.entity
+package edu.stanford.cs248.project.opengl
 
 import java.nio.ByteBuffer
 

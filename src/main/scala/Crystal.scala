@@ -6,7 +6,7 @@ import org.lwjgl.opengl._
 import java.nio.ByteBuffer
 
 import edu.stanford.cs248.project.entity._
-import edu.stanford.cs248.project.util._
+import edu.stanford.cs248.project.opengl._
 
 import org.lwjgl._
 import input._

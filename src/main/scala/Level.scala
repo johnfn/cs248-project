@@ -7,8 +7,9 @@ import scala.math._
 
 import org.lwjgl.opengl._
 
-import edu.stanford.cs248.project.util._
 import edu.stanford.cs248.project.entity._
+import edu.stanford.cs248.project.opengl._
+import edu.stanford.cs248.project.util._
 
 class LevelModel(val name: String) 
   extends TexturedVBOModel("terrain") 

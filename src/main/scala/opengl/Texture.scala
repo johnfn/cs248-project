@@ -1,4 +1,4 @@
-package edu.stanford.cs248.project.util
+package edu.stanford.cs248.project.opengl
 
 import javax.imageio.ImageIO
 import java.nio.{ByteBuffer, IntBuffer, ByteOrder}
