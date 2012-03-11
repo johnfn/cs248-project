@@ -18,7 +18,7 @@ object Main {
 
   val camera = new Camera()
   val manager = new EntityManager()
-  val shader = new Shader("phong")
+  val shader = new Shader("phong", "phong")
 
   def main(args:Array[String]) = {
     var fullscreen = false
@@ -49,7 +49,8 @@ object Main {
     }
     
     if(!shader.init()) {
-      println("""Shader "%s" initialization failed""".format(shader.name))
+      println("""Shader "%s/%s" initialization failed"""
+        .format(shader.vertName, shader.fragName))
       System.exit(-1)
     } else {
       shader.use()
@@ -57,6 +58,8 @@ object Main {
 
     glViewport(0, 0, width, height)
     glEnable(GL_DEPTH_TEST)
+    glEnable(GL_CULL_FACE)
+    glCullFace(GL_BACK)
     
     Mouse.setGrabbed(true)
 

@@ -2,7 +2,7 @@ package edu.stanford.cs248.project
 
 import org.lwjgl.opengl._
 
-class Shader(val name: String) {
+class Shader(val vertName: String, val fragName: String) {
   import GL11._
   import ARBShaderObjects._
   import ARBVertexShader._
@@ -14,8 +14,8 @@ class Shader(val name: String) {
     
     progId = glCreateProgramObjectARB()
     
-    val vertShader = makeShader(GL_VERTEX_SHADER_ARB, name+".vert.glsl")
-    val fragShader = makeShader(GL_FRAGMENT_SHADER_ARB, name+".frag.glsl")
+    val vertShader = makeShader(GL_VERTEX_SHADER_ARB, vertName+".vert.glsl")
+    val fragShader = makeShader(GL_FRAGMENT_SHADER_ARB, fragName+".frag.glsl")
     
     if(vertShader != 0 && fragShader != 0) {
       glAttachObjectARB(progId, vertShader)

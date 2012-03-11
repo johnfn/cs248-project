@@ -57,8 +57,8 @@ class LevelModel(val name: String, shader: Shader)
     var vertVec = new scala.collection.immutable.VectorBuilder[Vertex]()
       
     for(y <- 0 until ySize; x <- 0 until xSize) {
-      val xf = x.asInstanceOf[Float]
-      val yf = y.asInstanceOf[Float]
+      val xf = x.toFloat
+      val yf = y.toFloat
       val zf = heightMap.valueAt(x,y)*zScale
       val dzdx = deltaXMap.valueAt(x,y)*zScale
       val dzdy = deltaYMap.valueAt(x,y)*zScale
@@ -77,43 +77,80 @@ class LevelModel(val name: String, shader: Shader)
           0, 0, 1,
           floorS0+(dx+0.5f)*texSUnit, (2+dy+0.5f)*texTUnit)
       }
-
+      
+      // sub 'x' or 'y' for 'u'
+      def commonValues(dzdu: Float) = {
+        val nu = if(dzdu > 0) -1.0f else 1.0f
+        val zBot = min(zf, zf+dzdu)
+        val zHeight = abs(dzdu)
+        
+        // drop "top" tile
+        val topTileHeight = min(1.0f, zHeight)
+        val topTileZTop   = zBot+zHeight
+        
+        (nu, zBot, zHeight, topTileHeight, topTileZTop)
+      }
+      
       // paint x facing walls
       if(dzdx != 0) {
-        val nx = if(dzdx > 0) -1.0f else 1.0f
-        val zBot = min(zf, zf+dzdx)
-        val zHeight = abs(dzdx)
+        val (nx, zBot, zHeight, topTileHeight, topTileZTop) = commonValues(dzdx)
         
         // use texture of "higher" tile"
         val texS0 = texSUnit*texMap.valueAt(if(dzdx < 0) x else x+1, y)
         
-        def drawXWall(tileZBot: Float, tileZHeight: Float, texT0: Float) = {
+        def drawXWall(tileZTop: Float, tileZHeight: Float, texT0Units: Float) =
+        {
           vertVec ++= floorCorners.map { case(dy, dz) =>
             Vertex(
-              xf+0.5f, yf+dy, tileZBot+(dz+0.5f)*tileZHeight,
+              xf+0.5f, yf+dy*nx, tileZTop+(dz-0.5f)*tileZHeight,
               nx, 0, 0,
-              texS0+(dy+0.5f)*texSUnit, texT0+(dz+0.5f)*texTUnit)
+              texS0+(dy+0.5f)*texSUnit, 
+              (texT0Units+(1.0f-tileZHeight)+(dz+0.5f)*tileZHeight)*texTUnit)
           }          
         }
         
-        drawXWall(zBot, zHeight, 0)
+        // draw the top vertical tile
+        drawXWall(topTileZTop, topTileHeight, 1)
+        
+        // draw rest of the vertical tiles
+        if(zHeight > 1.0) {
+          for(tileTop <- 
+                Range.Double(zBot+zHeight-1, zBot-1, -1).map(_.toFloat)) 
+          {
+            drawXWall(tileTop, min(1.0f, tileTop-zBot), 0)
+          }
+        }
       }
-
-      /*
-      // paint y facing walls
+      
       if(dzdy != 0) {
-        val ny = if(dzdy < 0) -1.0f else 1.0f
+        val (ny, zBot, zHeight, topTileHeight, topTileZTop) = commonValues(dzdy)
         
         // use texture of "higher" tile"
-        val texS0 = texSUnit*texMap.valueAt(x, if(dzdy < 0) y else x+1)
+        val texS0 = texSUnit*texMap.valueAt(x, if(dzdy < 0) y else y+1)
         
-        vertVec ++= floorCorners.foreach { case(dx, dz) =>
-          Vertex(
-            xf+dx*ny, yf+0.5f, zf+(dz+0.5f)*dzdy,
-            0, ny, 0,
-            dx+0.5f, (dz+0.5f)*dzdy) // texture coordinates should tile wall
+        def drawYWall(tileZTop: Float, tileZHeight: Float, texT0Units: Float) =
+        {
+          vertVec ++= floorCorners.map { case(dx, dz) =>
+            Vertex(
+              xf-dx*ny, yf+0.5f, tileZTop+(dz-0.5f)*tileZHeight,
+              0, ny, 0,
+              texS0+(dx+0.5f)*texSUnit, 
+              (texT0Units+(1.0f-tileZHeight)+(dz+0.5f)*tileZHeight)*texTUnit)
+          }          
         }
-      }*/
+        
+        // draw the top vertical tile
+        drawYWall(topTileZTop, topTileHeight, 1)
+        
+        // draw rest of the vertical tiles
+        if(zHeight > 1.0) {
+          for(tileTop <- 
+                Range.Double(zBot+zHeight-1, zBot-1, -1).map(_.toFloat))
+          {
+            drawYWall(tileTop, min(1.0f, tileTop-zBot), 0)
+          }
+        }
+      }
     }
     
     vertVec.result()
