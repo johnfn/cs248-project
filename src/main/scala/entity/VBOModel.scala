@@ -68,7 +68,7 @@ trait VBOModel {
   }
 
   // Will draw what's in the VBO. User needs to specify matrices beforehand
-  def drawCall() = {
+  def drawCall(shader: Shader) = {
     import GL11._
     import GL12._
 
@@ -90,7 +90,7 @@ trait VBOModel {
     glVertexPointer(3, GL_FLOAT, Vertex.strideSize, Vertex.posOffset)
     glNormalPointer(GL_FLOAT, Vertex.strideSize, Vertex.norOffset)
     
-    additionalPredraw()
+    additionalPredraw(shader)
     
     // bind element data
     glDrawElements(drawMode, nIdxs, GL_UNSIGNED_INT, 0)
@@ -104,10 +104,10 @@ trait VBOModel {
     glDisableClientState(GL_NORMAL_ARRAY)
   }
 
-  def additionalPredraw() = {}
+  def additionalPredraw(shader: Shader) = {}
 }
 
-abstract class TexturedVBOModel(textureName: String, shader: Shader) 
+abstract class TexturedVBOModel(textureName: String) 
   extends VBOModel 
 {
   var texId = 0
@@ -118,21 +118,23 @@ abstract class TexturedVBOModel(textureName: String, shader: Shader)
   override def init() = {
     import GL11._
     import GL13._
+    import GL30._
     
     super.init()
     
     glActiveTexture(GL_TEXTURE0 + texUnit)
     texId = glGenTextures()
     glBindTexture(GL_TEXTURE_2D, texId)
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST)
+    
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tex.width, tex.height, 0, GL_RGBA,
       GL_UNSIGNED_BYTE, tex.glBytes)
+    //glGenerateMipmap(GL_TEXTURE_2D)
   }
   
-  override def additionalPredraw() = {
+  override def additionalPredraw(shader: Shader) = {
     import GL11._
     import GL13._
     import GL20._

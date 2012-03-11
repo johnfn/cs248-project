@@ -1,6 +1,7 @@
 package edu.stanford.cs248.project.entity
 
 import org.lwjgl.opengl._
+import edu.stanford.cs248.project._
 
 trait VBOModelEntity extends Entity { 
   def model: VBOModel
@@ -10,14 +11,14 @@ trait VBOModelEntity extends Entity {
   def z : Float
   
   // TODO: add stuff about rotation, shear, etc., etc.
-  override def renderGL() = {
+  override def renderGL(shader: Shader) = {
     import GL11._
     
     glPushMatrix()
     glMatrixMode(GL11.GL_MODELVIEW)
     glTranslatef(x, y, z)
     
-    model.drawCall()
+    model.drawCall(shader)
     
     glPopMatrix()
   }

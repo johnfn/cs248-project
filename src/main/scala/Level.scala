@@ -10,8 +10,8 @@ import org.lwjgl.opengl._
 import edu.stanford.cs248.project.util._
 import edu.stanford.cs248.project.entity._
 
-class LevelModel(val name: String, shader: Shader) 
-  extends TexturedVBOModel("terrain", shader) 
+class LevelModel(val name: String) 
+  extends TexturedVBOModel("terrain") 
 {
   val heightMap = new ImageMapGrayscale("/levels/"+name+"_h.png")
   val deltaXMap = heightMap.deltaXMap
@@ -159,8 +159,8 @@ class LevelModel(val name: String, shader: Shader)
   def getIndices() = (0 until nVerts)
 }
 
-class Level(val name: String, shader: Shader) extends VBOModelEntity {
-  val model = new LevelModel(name, shader)
+class Level(val name: String) extends VBOModelEntity {
+  val model = new LevelModel(name)
 
   // origin of the model in WORLD SPACE
   var x = 0f

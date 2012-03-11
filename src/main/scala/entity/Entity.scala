@@ -1,5 +1,7 @@
 package edu.stanford.cs248.project.entity
 
+import edu.stanford.cs248.project._
+
 trait Entity {
   def update(m: EntityManager) = {}
 
@@ -12,7 +14,7 @@ trait Entity {
 
   def traits() = List("render", "update")
   def doInitGL() = {}
-  def renderGL() = {}
+  def renderGL(shader: Shader) = {}
   def deleteGL() = {}
 }
 
@@ -28,7 +30,7 @@ class EntityManager {
     entities.filter(_.traits.contains("update")).foreach(_.update(this))
   }
 
-  def renderAll() = {
-    entities.filter(_.traits.contains("render")).foreach(_.renderGL())
+  def renderAll(shader: Shader) = {
+    entities.filter(_.traits.contains("render")).foreach(_.renderGL(shader))
   }
 }

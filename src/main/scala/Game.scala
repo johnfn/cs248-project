@@ -69,7 +69,7 @@ object Main {
     val ghost = new Ghost()
 
     manager.add(camera)
-    manager.add(new Level("level1", shader))
+    manager.add(new Level("level1"))
     manager.add(new Crystal(3.0f, 3.0f, 0.0f))
     manager.add(ghost)
     manager.add(new Protagonist(ghost))
@@ -89,18 +89,28 @@ object Main {
 
     camera.loadGLMatrices()
 
-    manager.renderAll()
+    manager.renderAll(shader)
   }
 
   def run() = {
+    val fpsPrintInterval = 5000;
+    var lastPrintTime = System.nanoTime()/1000000
+    var framesDrawnSinceLastPrint = 0 
+    
     while(!(isKeyDown(KEY_ESCAPE) || Display.isCloseRequested)) {
       updateGame()
-
       Display.update()
-
       renderGame()
-
       Display.sync(FRAMERATE)
+      framesDrawnSinceLastPrint += 1
+     
+      val tNow = System.nanoTime()/1000000
+      if(tNow > lastPrintTime+fpsPrintInterval) {
+        println("FPS: %f"
+          .format(framesDrawnSinceLastPrint.toDouble/(tNow-lastPrintTime)*1000))
+        lastPrintTime = tNow
+        framesDrawnSinceLastPrint = 0
+      }
     }
   }
 }

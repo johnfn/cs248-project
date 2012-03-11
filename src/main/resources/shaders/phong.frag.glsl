@@ -24,7 +24,7 @@ void main()
       vec4 Iamb = gl_FrontLightProduct[i].ambient; 
 
       //calculate Diffuse Term: 
-      vec4 Idiff = gl_FrontLightProduct[i].diffuse * max(dot(N,L), 0.0);
+      vec4 Idiff = gl_FrontLightProduct[i].diffuse * max(dot(N,L), 0.0) * texture2D(difTex, texcoord);
       Idiff = clamp(Idiff, 0.0, 1.0); 
    
       // calculate Specular Term:
@@ -38,6 +38,6 @@ void main()
    // write Total Color:
    gl_FragColor = gl_FrontLightModelProduct.sceneColor + finalColor;
    //gl_FragColor = vec4(texcoord.s, texcoord.t, 0, 1.0);
-   gl_FragColor = vec4(texture2D(difTex, texcoord).rgb, 1.0);
+   //gl_FragColor = vec4(texture2D(difTex, texcoord).rgb, 1.0);
 }
 
