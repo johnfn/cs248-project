@@ -25,7 +25,7 @@ class Camera extends Entity {
 
     // 90 degrees vertical fov, 16:9 aspect ratio
     // clip at 0.1 and 500
-    Project.gluPerspective(90, 16.0f/9.0f, 0.1f, 500f)
+    Project.gluPerspective(90, 16.0f/9.0f, 0.1f, 150f)
 
     GL11.glMatrixMode(GL11.GL_MODELVIEW)
     GL11.glLoadIdentity()

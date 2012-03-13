@@ -1,30 +1,48 @@
 package edu.stanford.cs248.project.opengl
 
 import org.lwjgl.opengl._
+import java.nio._
+
+import GL11._
+import GL14._
+import GL20._
+import EXTFramebufferObject._
 
 trait Fbo {
   import EXTFramebufferObject._ 
   
-  def fboId: Int 
+  def fboId: Int
+  def bind()
+}
+
+object screenFbo extends Fbo {
+  def fboId = 0
+  
   def bind() = {
     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fboId)
   }
 }
 
-object screenFbo extends Fbo {
-  def fboId = 0
-}
-
 // Multiple render targets using GL_FLOAT as data type
-class MrtFloatFbo(nTargets: Int, w: Int, h: Int) extends Fbo {
-  import GL11._
-  import GL14._
-  import EXTFramebufferObject._
-  
+class MrtFloatFbo(nTargets: Int, w: Int, h: Int) extends Fbo {  
   var fboId = 0
   
   var depthTex : Texture = null
-  var colorTexAry = new Array[Texture](nTargets)
+  var colorTexAry : Array[Texture] = null
+  
+  val drawBuffers = {
+    val res = 
+      ByteBuffer.allocateDirect(nTargets*4).order(ByteOrder.nativeOrder())
+    (0 until nTargets).map(i =>
+      res.putInt(GL_COLOR_ATTACHMENT0_EXT+i))
+    res.rewind()
+    res.asIntBuffer()
+  }
+  
+  def bind() = {
+    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fboId)
+    glDrawBuffers(drawBuffers)
+  }
   
   def init() = {
     fboId = glGenFramebuffersEXT()
@@ -40,7 +58,7 @@ class MrtFloatFbo(nTargets: Int, w: Int, h: Int) extends Fbo {
     glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
       GL_TEXTURE_2D, depthTex.id, 0)
     
-    colorTexAry = (0 to nTargets).toArray.map { i =>
+    colorTexAry = (0 until nTargets).toArray.map { i =>
       val tex = newTex(GL_RGBA)
       glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT+i, 
         GL_TEXTURE_2D, tex.id, 0)

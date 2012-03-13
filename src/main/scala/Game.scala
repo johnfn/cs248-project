@@ -95,6 +95,7 @@ object Main {
   }
 
   def updateGame() = {
+    ViewMode.update()
     manager.updateAll()
   }
 
@@ -102,35 +103,32 @@ object Main {
     import GL20._
     
     gbufFbo.bind()
+    gbufShader.use()
+    
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-
     camera.loadGLMatrices()
+    
     manager.renderAll(gbufShader)
     
-    val viewGbufs = false
-    
     screenFbo.bind()
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+    val screenShader = ViewMode.getShader
+    screenShader.use()
     
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
     glOrtho(0, 1, 0, 1, 1, -1)
     glMatrixMode(GL_MODELVIEW)
     glLoadIdentity()
     
-    val shader = secondShader
-    
     // bind 4-g buffers
     gbufFbo.colorTexAry.zipWithIndex.map { 
       case (tex, texUnit) => tex.bind(texUnit)
     }
     
-    List("posGbuf", "nmlGbuf", "difGbuf", "spcGbuf").zipWithIndex.map {
-      case (name, texUnit) => 
-        glUniform1i(glGetUniformLocation(shader.id, "name"), texUnit)
-    }
+    ViewMode.bindUniforms(screenShader)
     
-    val texCoordLoc = glGetAttribLocation(shader.id, "texcoordIn")
+    val texCoordLoc = glGetAttribLocation(screenShader.id, "texcoordIn")
       
     glBegin(GL_QUADS)
       glVertexAttrib2f(texCoordLoc, 0, 0)
@@ -163,6 +161,42 @@ object Main {
         lastPrintTime = tNow
         framesDrawnSinceLastPrint = 0
       }
+    }
+  }
+}
+
+object ViewMode {
+  var lastKey = KEY_1
+  
+  def associations = List(
+    (KEY_1, 0, false), // standard view
+    (KEY_2, 0, false), // positions
+    (KEY_3, 1, false), // normals
+    (KEY_4, 1, true) , // depths
+    (KEY_5, 2, false), // diffuse texture
+    (KEY_6, 3, false) // specular texture
+  )
+  
+  def update() = associations.foreach {
+    case (key, _, _) => if(isKeyDown(key)) lastKey = key
+  }
+  
+  def getShader : Shader = 
+    if(lastKey == KEY_1) Main.secondShader else Main.viewGbufsShader
+  
+  def bindUniforms(shader: Shader) = {
+    import GL20._
+    
+    val (_, gBufNum, showW) = associations.find(_._1 == lastKey).get
+    
+    if(lastKey <= KEY_6) {
+      glUniform1i(glGetUniformLocation(shader.id, "gBufNumber"), gBufNum)
+      glUniform1i(glGetUniformLocation(shader.id, "showW"), if(showW) 1 else 0)
+    }
+    
+    List("posGbuf", "nmlGbuf", "difGbuf", "spcGbuf").zipWithIndex.map {
+      case (name, texUnit) => 
+        glUniform1i(glGetUniformLocation(shader.id, name), texUnit)
     }
   }
 }

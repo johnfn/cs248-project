@@ -36,6 +36,7 @@ trait Texture {
   def bind(texUnit: Int) = {
     glActiveTexture(GL_TEXTURE0 + texUnit)
     glBindTexture(GL_TEXTURE_2D, id)
+    //println("active tex, texid : %d %d".format(texUnit, id))
   }
 }
 

@@ -132,7 +132,7 @@ abstract class TexturedVBOModel(texDif: Texture, texSpc: Texture)
     texDif.bind(texDifUnit)
     texSpc.bind(texSpcUnit)
     glUniform1i(glGetUniformLocation(shader.id, "texDif"), texDifUnit)
-    glUniform1i(glGetUniformLocation(shader.id, "texSpc"), texDifUnit)
+    glUniform1i(glGetUniformLocation(shader.id, "texSpc"), texSpcUnit)
     
     // Bind texture coordinates
     glEnableVertexAttribArray(glGetAttribLocation(shader.id, "texcoordIn"))
