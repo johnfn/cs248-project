@@ -6,7 +6,7 @@ trait Fbo {
   import EXTFramebufferObject._ 
   
   def fboId: Int 
-  def use() = {
+  def bind() = {
     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fboId)
   }
 }
@@ -21,17 +21,22 @@ class MrtFloatFbo(nTargets: Int, w: Int, h: Int) extends Fbo {
   import GL14._
   import EXTFramebufferObject._
   
-  val fboId = glGenFramebuffersEXT()
+  var fboId = 0
   
   var depthTex : Texture = null
   var colorTexAry = new Array[Texture](nTargets)
   
   def init() = {
-    use()
+    fboId = glGenFramebuffersEXT()
+    bind()
     
-    def newTex(fmt: Int) = new BlankTexture(w, h, fmt, GL_FLOAT)
+    def newTex(fmt: Int) = {
+      val tex = new BlankTexture(w, h, fmt, GL_FLOAT)
+      tex.init()
+      tex
+    }
     
-    depthTex = newTex(GL_DEPTH_COMPONENT24)
+    depthTex = newTex(GL_DEPTH_COMPONENT)
     glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
       GL_TEXTURE_2D, depthTex.id, 0)
     
@@ -45,8 +50,9 @@ class MrtFloatFbo(nTargets: Int, w: Int, h: Int) extends Fbo {
     if( glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT) != 
         GL_FRAMEBUFFER_COMPLETE_EXT)
     {
-      throw new RuntimeException("FBO with %i targets didn't initialize."
-        .format(nTargets))
+      throw new 
+        RuntimeException("FBO with %d targets didn't initialize. Code: %d"
+          .format(nTargets, glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT)))
     }
   }
   

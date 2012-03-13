@@ -1,6 +1,6 @@
 package edu.stanford.cs248.project
 
-import org.lwjgl.opengl.{Display,GL11,DisplayMode, GLContext}
+import org.lwjgl.opengl._
 import org.lwjgl.input.Keyboard._
 import org.lwjgl.input._
 import GL11._
@@ -18,7 +18,12 @@ object Main {
 
   val camera = new Camera()
   val manager = new EntityManager()
-  val shader = new Shader("phong", "phong")
+  
+  val gbufFbo = new MrtFloatFbo(4, width, height)
+  
+  val gbufShader = new Shader("gbufs", "gbufs")
+  val viewGbufsShader = new Shader("minimal", "viewGbufs")
+  val secondShader = new Shader("minimal", "second")
 
   def main(args:Array[String]) = {
     var fullscreen = false
@@ -53,13 +58,17 @@ object Main {
       System.exit(-1)
     }
     
-    if(!shader.init()) {
+    def loadShader(shader: Shader) = if(!shader.init()) {
       println("""Shader "%s/%s" initialization failed"""
         .format(shader.vertName, shader.fragName))
       System.exit(-1)
     } else {
       shader.use()
     }
+       
+    List(gbufShader, viewGbufsShader, secondShader).foreach(loadShader)
+    
+    gbufFbo.init()
 
     glViewport(0, 0, width, height)
     glEnable(GL_DEPTH_TEST)
@@ -90,11 +99,49 @@ object Main {
   }
 
   def renderGame() = {
+    import GL20._
+    
+    gbufFbo.bind()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
     camera.loadGLMatrices()
-
-    manager.renderAll(shader)
+    manager.renderAll(gbufShader)
+    
+    val viewGbufs = false
+    
+    screenFbo.bind()
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+    
+    glMatrixMode(GL_PROJECTION)
+    glLoadIdentity()
+    glOrtho(0, 1, 0, 1, 1, -1)
+    glMatrixMode(GL_MODELVIEW)
+    glLoadIdentity()
+    
+    val shader = secondShader
+    
+    // bind 4-g buffers
+    gbufFbo.colorTexAry.zipWithIndex.map { 
+      case (tex, texUnit) => tex.bind(texUnit)
+    }
+    
+    List("posGbuf", "nmlGbuf", "difGbuf", "spcGbuf").zipWithIndex.map {
+      case (name, texUnit) => 
+        glUniform1i(glGetUniformLocation(shader.id, "name"), texUnit)
+    }
+    
+    val texCoordLoc = glGetAttribLocation(shader.id, "texcoordIn")
+      
+    glBegin(GL_QUADS)
+      glVertexAttrib2f(texCoordLoc, 0, 0)
+      glVertex3f(0, 0, 0)
+      glVertexAttrib2f(texCoordLoc, 1, 0)
+      glVertex3f(1, 0, 0)
+      glVertexAttrib2f(texCoordLoc, 1, 1)
+      glVertex3f(1, 1, 0)
+      glVertexAttrib2f(texCoordLoc, 0, 1)
+      glVertex3f(0, 1, 0)
+    glEnd()
   }
 
   def run() = {

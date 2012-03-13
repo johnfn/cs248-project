@@ -8,31 +8,31 @@ class Shader(val vertName: String, val fragName: String) {
   import ARBVertexShader._
   import ARBFragmentShader._
   
-  var progId = 0
+  var id = 0
   
   def init() = {
     
-    progId = glCreateProgramObjectARB()
+    id = glCreateProgramObjectARB()
     
     val vertShader = makeShader(GL_VERTEX_SHADER_ARB, vertName+".vert.glsl")
     val fragShader = makeShader(GL_FRAGMENT_SHADER_ARB, fragName+".frag.glsl")
     
     if(vertShader != 0 && fragShader != 0) {
-      glAttachObjectARB(progId, vertShader)
-      glAttachObjectARB(progId, fragShader)
+      glAttachObjectARB(id, vertShader)
+      glAttachObjectARB(id, fragShader)
       
-      glLinkProgramARB(progId)
-      if(glGetObjectParameteriARB(progId, GL_OBJECT_LINK_STATUS_ARB) ==
+      glLinkProgramARB(id)
+      if(glGetObjectParameteriARB(id, GL_OBJECT_LINK_STATUS_ARB) ==
          GL_FALSE)
       {
-        printLog("Link failure", progId)
+        printLog("Link failure", id)
         false
       } else {
-        glValidateProgramARB(progId)
-        if(glGetObjectParameteriARB(progId, GL_OBJECT_VALIDATE_STATUS_ARB) ==
+        glValidateProgramARB(id)
+        if(glGetObjectParameteriARB(id, GL_OBJECT_VALIDATE_STATUS_ARB) ==
            GL_FALSE)
         {
-          printLog("Validate failure", progId)
+          printLog("Validate failure", id)
           false
         } else {
           true
@@ -68,7 +68,7 @@ class Shader(val vertName: String, val fragName: String) {
   }
   
   def use() = {
-    glUseProgramObjectARB(progId)
+    glUseProgramObjectARB(id)
   }
   
   def stopUsing() = {

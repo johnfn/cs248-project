@@ -9,6 +9,7 @@ import org.lwjgl.opengl._
 // right now just means 2D texture
 trait Texture {
   import GL11._
+  import GL12._
   import GL13._
   
   val id = glGenTextures()
@@ -25,6 +26,8 @@ trait Texture {
     bind(0)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
     
     glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format,
       dataType, initData)
@@ -41,8 +44,8 @@ class ImageTexture(rcPath: String) extends Texture {
   
   val img = ImageIO.read(getClass.getResource(rcPath))
   
-  val width = img.getWidth
-  val height = img.getHeight
+  def width = img.getWidth
+  def height = img.getHeight
   
   def format = GL_RGBA
   def dataType = GL_UNSIGNED_BYTE
@@ -54,6 +57,24 @@ class BlankTexture(val width: Int, val height: Int,
                    val format: Int, val dataType: Int) 
   extends Texture
 {
+}
+
+class ColorTexture(r: Int, g: Int, b: Int) extends Texture {
+  import GL11._
+  
+  def width = 1
+  def height = 1
+  def format = GL_RGBA
+  def dataType = GL_UNSIGNED_BYTE
+  
+  override def initData = {
+    val res = 
+      ByteBuffer.allocateDirect(width*height*4).order(ByteOrder.nativeOrder())
+    
+    res.put(r.toByte).put(g.toByte).put(b.toByte).put(255.toByte).rewind()
+    
+    res
+  }
 }
 
 object Texture {

@@ -12,7 +12,9 @@ import edu.stanford.cs248.project.opengl._
 import edu.stanford.cs248.project.util._
 
 class LevelModel(val name: String) 
-  extends TexturedVBOModel("terrain") 
+  extends TexturedVBOModel(
+    new ImageTexture("/textures/terrain_d.png"),
+    new ColorTexture(0, 0, 0)) 
 {
   val heightMap = new ImageMapGrayscale("/levels/"+name+"_h.png")
   val deltaXMap = heightMap.deltaXMap
