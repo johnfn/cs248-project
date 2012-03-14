@@ -3,6 +3,8 @@ uniform sampler2D nmlGbuf;
 uniform sampler2D difGbuf;
 uniform sampler2D spcGbuf;
 
+uniform bool showSSAO;
+
 varying vec2 texcoord;
 
 void main()  

@@ -169,29 +169,35 @@ object ViewMode {
   var lastKey = KEY_1
   
   def associations = List(
-    (KEY_1, 0, false), // standard view
-    (KEY_2, 0, false), // positions
-    (KEY_3, 1, false), // normals
-    (KEY_4, 1, true) , // depths
-    (KEY_5, 2, false), // diffuse texture
-    (KEY_6, 3, false) // specular texture
+    (KEY_1, 0), // standard view
+    (KEY_2, 0), // positions
+    (KEY_3, 1), // normals
+    (KEY_4, 2), // diffuse texture
+    (KEY_5, 3), // specular texture
+    (KEY_6, 0) // SSAO test
   )
   
   def update() = associations.foreach {
-    case (key, _, _) => if(isKeyDown(key)) lastKey = key
+    case (key, _) => if(isKeyDown(key)) lastKey = key
   }
   
   def getShader : Shader = 
-    if(lastKey == KEY_1) Main.secondShader else Main.viewGbufsShader
+    if(lastKey == KEY_1 || lastKey > 6) 
+      Main.secondShader 
+    else Main.viewGbufsShader
   
   def bindUniforms(shader: Shader) = {
     import GL20._
     
-    val (_, gBufNum, showW) = associations.find(_._1 == lastKey).get
+    val (_, gBufNum) = associations.find(_._1 == lastKey).get
     
-    if(lastKey <= KEY_6) {
+    if(lastKey <= KEY_5) {
       glUniform1i(glGetUniformLocation(shader.id, "gBufNumber"), gBufNum)
-      glUniform1i(glGetUniformLocation(shader.id, "showW"), if(showW) 1 else 0)
+    }
+    
+    if(lastKey == KEY_1 || lastKey == KEY_6) {
+      glUniform1i(glGetUniformLocation(shader.id, "showSSAO"), 
+        if(lastKey == KEY_1) 0 else 1)
     }
     
     List("posGbuf", "nmlGbuf", "difGbuf", "spcGbuf").zipWithIndex.map {

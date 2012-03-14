@@ -1,21 +1,19 @@
 attribute vec2 texcoordIn;
 
 varying vec3 N;
-varying vec4 v;
+varying vec3 vCartesian;
 varying vec2 texcoord;
-varying vec3 ndcVec;
+varying vec4 clipVec;
 
 void main()  
 {     
-   v = gl_ModelViewMatrix * gl_Vertex;       
-   N = normalize(gl_NormalMatrix * gl_Normal);
+  vec4 vViewSpace = gl_ModelViewMatrix * gl_Vertex; 
+  vCartesian = vViewSpace.xyz/vViewSpace.w;
+  
+  N = normalize(gl_NormalMatrix * gl_Normal);
    
-   vec4 clipVec = gl_ProjectionMatrix * gl_ModelViewMatrix * gl_Vertex;
+  gl_Position = gl_ProjectionMatrix * vViewSpace;
    
-   gl_Position = clipVec;
-   
-   ndcVec = clipVec.xyz/clipVec.w;
-
-   texcoord = texcoordIn;
+  texcoord = texcoordIn;
 }
 
