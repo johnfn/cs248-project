@@ -54,7 +54,6 @@ class Crystal(val x: Float, val y: Float, val z: Float) extends Entity{
 			plant.setTexture("plant")
 			plant.setTransparency(2)
 			plant.setCulling(Object3D.CULLING_DISABLED)
-			plant.rotateX(-3.14159f/2f)
 			plant.rotateMesh()
 			plant.setRotationMatrix(new Matrix())
 			//plant.setAdditionalColor(new Color(100,100,100))
@@ -73,7 +72,6 @@ class Crystal(val x: Float, val y: Float, val z: Float) extends Entity{
 		glColor3f(1, 0, 0)
 
 		glTranslatef(5, 5, 0)
-		glRotatef(-90, 1, 0, 0)
 		glBegin(GL_TRIANGLES)
 			for (poly <- 0 until polymanager.getMaxPolygonID(); vert <- 0 until 3) {
 				val sv:SimpleVector = polymanager.getTransformedVertex(poly, vert)
