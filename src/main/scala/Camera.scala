@@ -50,7 +50,7 @@ class Camera extends Entity {
   def multPerspectiveMatrix() {
     // 90 degrees vertical fov, 16:9 aspect ratio
     // clip at 0.1 and 500
-    Project.gluPerspective(90, 16.0f/9.0f, 0.9f, farClip)
+    Project.gluPerspective(90, 16.0f/9.0f, 0.2f, farClip)
   }
   
   def passInUniforms(shader: Shader) {

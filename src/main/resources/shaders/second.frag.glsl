@@ -12,17 +12,18 @@ float rand(vec2 co){
 }
 
 float zSample(vec2 texc) {
-  float normalizeNegativeZ = texture2D(nmlGbuf, texcoord).w; 
-  return -farClip*normalizeNegativeZ;
+  float normalizeNegativeZ = texture2D(nmlGbuf, texc).w; 
+  return (farClip*0.4)*(normalizeNegativeZ-1.0);
 }
 
 void main()  
 {
   float PI = 3.14159265358979323846264;
-  int nAngles = 8;
-  float lookupStep = 0.25;
-  int nSamples = 8;
-  float epsilon = 0.01;
+  int nAngles = 2;
+  float lookupStep = 0.15;
+  int nSamples = 4;
+  float epsilon = 0.0;
+  float maxZdiff = 5.0;
   
   mat4 projMat = gl_TextureMatrix[0];
   
@@ -41,8 +42,9 @@ void main()
     // Generate random normalized tangent and bitangent.
     // This allows us to trade low frequency noise for high frequency noise, 
     // which we can blur
-    vec3 rVec = 
-      vec3(rand(texcoord), rand(texcoord+vec2(1,1)), rand(texcoord+vec2(2,2)));
+    vec3 rVec = vec3( 
+      rand(texcoord), rand(texcoord+vec2(1,1)), rand(texcoord+vec2(2,2))
+      )*2.0-1.0;
     vec3 normal = texture2D(nmlGbuf, texcoord).xyz*2.0-1.0;
     
     float cumAmbientFactor = 0.;
@@ -57,34 +59,50 @@ void main()
       vec3 sampleDir = cos(angle)*tangent + sin(angle)*bitangent;
       
       // angle tangent surface makes from z-contours
-      float angleFromSampleDir = asin(dot(sampleDir, vec3(0, 0, -1)));
+      float tangentAngle =
+        atan(sampleDir.z/sqrt(dot(sampleDir.xy,sampleDir.xy)));
+      
+      // sampling direction projected onto the xy plane
+      //vec3 sampleDirProjXY = vec3(sampleDir.xy, 0);
       
       // angle sampled point makes from z-contour 
-      float maxAngle = 0.;
+      float maxHorizAngle = -PI/2.; // actually starts at -pi/2.
+      float ambFactor = 0.0;
       
       for(int j=0; j < nSamples; j++) {
-        // this is in view space
-        float sampleDist = float(j+1)*lookupStep;
-        vec3 lookupPt = originEye + sampleDist*sampleDir; // in view space
+        float sampleDist = float(j+1)*lookupStep;//*cos(tangentAngle);
+        
+        vec3 lookupPt = originEye + sampleDist*sampleDir;
+        
         vec4 lookupClipHomo = gl_TextureMatrix[0]*vec4(lookupPt, 1.0);
         vec3 lookupClip = lookupClipHomo.xyz/lookupClipHomo.w;
         
-        float lookupPtActualZ = zSample(lookupClip.xy*0.5+0.5);
+        float lookupPtActualZ = zSample( lookupClip.xy*0.5+0.5 );
         
-        if(lookupPtActualZ > lookupPt.z + epsilon) {
-          float angle = 
-            atan(lookupPtActualZ-lookupPt.z, sampleDist) + angleFromSampleDir;
-          if(angle > maxAngle) maxAngle = angle;
+        // difference between xy plane of origin and actual z
+        float zDiff = lookupPtActualZ - originEye.z;
+        
+        if(abs(zDiff) > epsilon && abs(zDiff) < maxZdiff) {        
+          float horizAngle = atan(zDiff, sampleDist);
+          
+          if(horizAngle > maxHorizAngle) maxHorizAngle = horizAngle;
         }
       }
       
-      cumAmbientFactor += 1.0/float(nAngles)*(1.-maxAngle/(PI/2.));
+      ambFactor = 1.0-((maxHorizAngle - tangentAngle)/(PI/2.));
+      
+      cumAmbientFactor += (1.0/float(nAngles))*(ambFactor);
+      //cumAmbientFactor += (1.0/float(nAngles))*(ambFactor);
+      //gl_FragColor = vec4(vec3(1,1,1)*(tangentAngle/(PI/2)*0.5+0.5), 1);
     }
     
     if(showSSAO) {
-      gl_FragColor = vec4(tangent*0.5+0.5, 1);
+      //gl_FragColor = vec4(normalize(rVec)*0.5+0.5, 1);
       //gl_FragColor = vec4(normal, 1);
-      //gl_FragColor = vec4(vec3(1,1,1)*cumAmbientFactor, 1);
+      gl_FragColor = vec4(vec3(1,1,1)*(cumAmbientFactor), 1);
+      //gl_FragColor = vec4(tangent*0.5+0.5, 1);
+      //gl_FragColor = vec4(vec3(1,1,1)*(1+originEye.z/farClip), 1);
+      //gl_FragColor = vec4(vec3(1,1,1)*bitangent.y*0.5+0.5, 1);
     }
     else {
       gl_FragColor = texture2D(difGbuf, texcoord);
