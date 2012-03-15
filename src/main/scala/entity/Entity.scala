@@ -1,6 +1,7 @@
 package edu.stanford.cs248.project.entity
 
 import edu.stanford.cs248.project.opengl._
+import org.lwjgl.opengl._
 
 trait Entity {
   def update(m: EntityManager) = {}
@@ -31,6 +32,13 @@ class EntityManager {
   }
 
   def renderAll(shader: Shader) = {
-    entities.filter(_.traits.contains("render")).foreach(_.renderGL(shader))
+    import GL11._
+
+    entities.filter(_.traits.contains("render")).foreach(obj =>
+      {
+        glPushMatrix()
+        obj.renderGL(shader)
+        glPopMatrix()
+      })
   }
 }
