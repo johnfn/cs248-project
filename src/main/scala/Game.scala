@@ -19,7 +19,7 @@ object Main {
   val camera = new Camera()
   val manager = new EntityManager()
   
-  val gbufFbo = new MrtFloatFbo(4, width, height)
+  val gbufFbo = new MrtFloatFbo(3, width, height)
   
   val gbufShader = new Shader("gbufs", "gbufs")
   val viewGbufsShader = new Shader("minimal", "viewGbufs")
@@ -105,21 +105,27 @@ object Main {
     gbufFbo.bind()
     gbufShader.use()
     
+    //glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     camera.loadGLMatrices()
+    camera.passInUniforms(gbufShader)
     
     manager.renderAll(gbufShader)
     
     screenFbo.bind()
     val screenShader = ViewMode.getShader
     screenShader.use()
+    camera.passInUniforms(screenShader)
     
+    //glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
     glOrtho(0, 1, 0, 1, 1, -1)
     glMatrixMode(GL_MODELVIEW)
     glLoadIdentity()
+    
+    camera.putModelViewMatrixIntoTextureMat(0)
     
     // bind 4-g buffers
     gbufFbo.colorTexAry.zipWithIndex.map { 
@@ -169,16 +175,16 @@ object ViewMode {
   var lastKey = KEY_1
   
   def associations = List(
-    (KEY_1, 0), // standard view
-    (KEY_2, 0), // positions
-    (KEY_3, 1), // normals
-    (KEY_4, 2), // diffuse texture
-    (KEY_5, 3), // specular texture
-    (KEY_6, 0) // SSAO test
+    (KEY_1, 0, false), // standard view
+    (KEY_2, 0, false), // normal
+    (KEY_3, 0, true),  // zEye buffer
+    (KEY_4, 1, false), // diffuse texture
+    (KEY_5, 2, false), // specular texture
+    (KEY_6, 0, true)  // SSAO test
   )
   
   def update() = associations.foreach {
-    case (key, _) => if(isKeyDown(key)) lastKey = key
+    case (key, _, _) => if(isKeyDown(key)) lastKey = key
   }
   
   def getShader : Shader = 
@@ -189,18 +195,19 @@ object ViewMode {
   def bindUniforms(shader: Shader) = {
     import GL20._
     
-    val (_, gBufNum) = associations.find(_._1 == lastKey).get
+    val (_, gBufNum, optFlg) = associations.find(_._1 == lastKey).get
     
-    if(lastKey <= KEY_5) {
+    if(lastKey > KEY_1 && lastKey <= KEY_5) {
       glUniform1i(glGetUniformLocation(shader.id, "gBufNumber"), gBufNum)
+      glUniform1i(glGetUniformLocation(shader.id, "showW"), if(optFlg) 1 else 0) 
     }
     
     if(lastKey == KEY_1 || lastKey == KEY_6) {
       glUniform1i(glGetUniformLocation(shader.id, "showSSAO"), 
-        if(lastKey == KEY_1) 0 else 1)
+        if(optFlg) 1 else 0)
     }
     
-    List("posGbuf", "nmlGbuf", "difGbuf", "spcGbuf").zipWithIndex.map {
+    List("nmlGbuf", "difGbuf", "spcGbuf").zipWithIndex.map {
       case (name, texUnit) => 
         glUniform1i(glGetUniformLocation(shader.id, name), texUnit)
     }

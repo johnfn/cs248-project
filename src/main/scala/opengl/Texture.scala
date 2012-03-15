@@ -21,11 +21,13 @@ trait Texture {
   def format: Int
   def dataType: Int
   
+  def filter = GL_NEAREST
+  
   def init() = {
     // do all tex initialization work on texture unit 0
     bind(0)
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter)
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
     
@@ -58,6 +60,8 @@ class BlankTexture(val width: Int, val height: Int,
                    val format: Int, val dataType: Int) 
   extends Texture
 {
+  // use for FBOs, so need linear filtering
+  override def filter = GL11.GL_LINEAR 
 }
 
 class ColorTexture(r: Int, g: Int, b: Int) extends Texture {

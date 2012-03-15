@@ -1,19 +1,24 @@
+uniform float farClip; // to store linear normalized z depths
+
 attribute vec2 texcoordIn;
 
-varying vec3 N;
-varying vec3 vCartesian;
+varying vec3 Ncompressed;
+
 varying vec2 texcoord;
-varying vec4 clipVec;
+
+varying vec4 vEyeHomo;
 
 void main()  
 {     
-  vec4 vViewSpace = gl_ModelViewMatrix * gl_Vertex; 
-  vCartesian = vViewSpace.xyz/vViewSpace.w;
+  vEyeHomo = gl_ModelViewMatrix*gl_Vertex;
+  //vEye = vec3(gl_ModelViewMatrix[1][2], gl_ModelViewMatrix[2][2], gl_ModelViewMatrix[3][2]);
+  //vEye = vEyeHomo.xyz/vEyeHomo.w;
+  vec4 clipVec = gl_ModelViewProjectionMatrix * gl_Vertex;
   
-  N = normalize(gl_NormalMatrix * gl_Normal);
-   
-  gl_Position = gl_ProjectionMatrix * vViewSpace;
-   
+  Ncompressed = normalize(gl_NormalMatrix * gl_Normal)*0.5+0.5;
+  
   texcoord = texcoordIn;
+  
+  gl_Position = clipVec;
 }
 

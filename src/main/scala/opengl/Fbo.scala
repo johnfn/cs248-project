@@ -49,7 +49,7 @@ class MrtFloatFbo(nTargets: Int, w: Int, h: Int) extends Fbo {
     bind()
     
     def newTex(fmt: Int) = {
-      val tex = new BlankTexture(w, h, fmt, GL_FLOAT)
+      val tex = new BlankTexture(w, h, fmt, GL_UNSIGNED_BYTE)
       tex.init()
       tex
     }
@@ -59,7 +59,7 @@ class MrtFloatFbo(nTargets: Int, w: Int, h: Int) extends Fbo {
       GL_TEXTURE_2D, depthTex.id, 0)
     
     colorTexAry = (0 until nTargets).toArray.map { i =>
-      val tex = newTex(GL_RGB)
+      val tex = newTex(GL_RGBA)
       glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT+i, 
         GL_TEXTURE_2D, tex.id, 0)
       tex
