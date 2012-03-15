@@ -3,8 +3,6 @@ uniform sampler2D difGbuf;
 uniform sampler2D spcGbuf;
 
 uniform float farClip;
-uniform bool showSSAO;
-
 varying vec2 texcoord;
 
 float rand(vec2 co){
@@ -23,7 +21,7 @@ void main()
   float lookupStep = 0.15;
   int nSamples = 4;
   float epsilon = 0.0;
-  float maxZdiff = 5.0;
+  float maxZdiff = 2.0;
   
   mat4 projMat = gl_TextureMatrix[0];
   
@@ -62,9 +60,6 @@ void main()
       float tangentAngle =
         atan(sampleDir.z/sqrt(dot(sampleDir.xy,sampleDir.xy)));
       
-      // sampling direction projected onto the xy plane
-      //vec3 sampleDirProjXY = vec3(sampleDir.xy, 0);
-      
       // angle sampled point makes from z-contour 
       float maxHorizAngle = -PI/2.; // actually starts at -pi/2.
       float ambFactor = 0.0;
@@ -92,21 +87,9 @@ void main()
       ambFactor = 1.0-((maxHorizAngle - tangentAngle)/(PI/2.));
       
       cumAmbientFactor += (1.0/float(nAngles))*(ambFactor);
-      //cumAmbientFactor += (1.0/float(nAngles))*(ambFactor);
-      //gl_FragColor = vec4(vec3(1,1,1)*(tangentAngle/(PI/2)*0.5+0.5), 1);
     }
     
-    if(showSSAO) {
-      //gl_FragColor = vec4(normalize(rVec)*0.5+0.5, 1);
-      //gl_FragColor = vec4(normal, 1);
-      gl_FragColor = vec4(vec3(1,1,1)*(cumAmbientFactor), 1);
-      //gl_FragColor = vec4(tangent*0.5+0.5, 1);
-      //gl_FragColor = vec4(vec3(1,1,1)*(1+originEye.z/farClip), 1);
-      //gl_FragColor = vec4(vec3(1,1,1)*bitangent.y*0.5+0.5, 1);
-    }
-    else {
-      gl_FragColor = texture2D(difGbuf, texcoord);
-    }
+    gl_FragColor = vec4(vec3(1,1,1)*(cumAmbientFactor), 1);    
   }
 }
 

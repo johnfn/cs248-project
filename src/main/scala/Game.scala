@@ -4,6 +4,8 @@ import org.lwjgl.opengl._
 import org.lwjgl.input.Keyboard._
 import org.lwjgl.input._
 import GL11._
+import GL20._
+
 import math._
 import scala.util.control.Breaks._
 
@@ -20,10 +22,17 @@ object Main {
   val manager = new EntityManager()
   
   val gbufFbo = new MrtFloatFbo(3, width, height)
+  val ssaoFbo = new SimpleFbo(width, height, GL_RGBA) // GL_LUMIANCE crashes
+  val blurXFbo = new SimpleFbo(width, height, GL_RGBA)
+  val blurYFbo = new SimpleFbo(width, height, GL_RGBA)
+  val finalFbo = new SimpleFbo(width, height, GL_RGBA)
   
   val gbufShader = new Shader("gbufs", "gbufs")
-  val viewGbufsShader = new Shader("minimal", "viewGbufs")
-  val secondShader = new Shader("minimal", "second")
+  val testShader = new Shader("minimal", "test")
+  val ssaoShader = new Shader("minimal", "ssao")
+  val blurXShader = new Shader("minimal", "blurX")
+  val blurYShader = new Shader("minimal", "blurY")
+  val finalShader = new Shader("minimal", "final")
 
   def main(args:Array[String]) = {
     var fullscreen = false
@@ -66,9 +75,15 @@ object Main {
       shader.use()
     }
        
-    List(gbufShader, viewGbufsShader, secondShader).foreach(loadShader)
+    List(
+      gbufShader, testShader, ssaoShader, blurXShader, blurYShader, finalShader)
+      .foreach(loadShader)
     
     gbufFbo.init()
+    ssaoFbo.init()
+    blurXFbo.init()
+    blurYFbo.init()
+    finalFbo.init()
 
     glViewport(0, 0, width, height)
     glEnable(GL_DEPTH_TEST)
@@ -100,24 +115,55 @@ object Main {
   }
 
   def renderGame() = {
-    import GL20._
-    
+    // Render G - buffers
     gbufFbo.bind()
     gbufShader.use()
-    
-    //glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     camera.loadGLMatrices()
     camera.passInUniforms(gbufShader)
     
     manager.renderAll(gbufShader)
     
-    screenFbo.bind()
-    val screenShader = ViewMode.getShader
-    screenShader.use()
-    camera.passInUniforms(screenShader)
+    // Render SSAO pass
+    ssaoFbo.bind()
+    ssaoShader.use()
     
-    //glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    camera.passInUniforms(ssaoShader)
+    camera.putModelViewMatrixIntoTextureMat(0)
+    ViewMode.bindGBufs(ssaoShader)
+    
+    drawQuad(ssaoShader)
+    
+    // Render Blur X pass
+    blurXFbo.bind()
+    blurXShader.use()
+    ssaoFbo.tex.bindAndSetShader(0, blurXShader, "texInp");
+    drawQuad(blurXShader)
+    
+    // Render Blur Y pass
+    blurYFbo.bind()
+    blurYShader.use()
+    blurXFbo.tex.bindAndSetShader(0, blurYShader, "texInp");
+    drawQuad(blurYShader)
+    
+    // Render final shader
+    screenFbo.bind()
+    //finalFbo.bind()
+    finalShader.use()
+    ViewMode.bindGBufs(finalShader)
+    blurYFbo.tex.bindAndSetShader(3, finalShader, "ssaoBuf");
+    drawQuad(finalShader)
+    
+    /*// Render Screen
+    screenFbo.bind()
+    testShader.use()
+    ViewMode.bindForTestShader(testShader)
+    
+    drawQuad(testShader)*/
+  }
+  
+  def drawQuad(shader: Shader) = {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
@@ -125,16 +171,7 @@ object Main {
     glMatrixMode(GL_MODELVIEW)
     glLoadIdentity()
     
-    camera.putModelViewMatrixIntoTextureMat(0)
-    
-    // bind 4-g buffers
-    gbufFbo.colorTexAry.zipWithIndex.map { 
-      case (tex, texUnit) => tex.bind(texUnit)
-    }
-    
-    ViewMode.bindUniforms(screenShader)
-    
-    val texCoordLoc = glGetAttribLocation(screenShader.id, "texcoordIn")
+    val texCoordLoc = glGetAttribLocation(shader.id, "texcoordIn")
       
     glBegin(GL_QUADS)
       glVertexAttrib2f(texCoordLoc, 0, 0)
@@ -174,42 +211,46 @@ object Main {
 object ViewMode {
   var lastKey = KEY_1
   
-  def associations = List(
-    (KEY_1, 0, false), // standard view
-    (KEY_2, 0, false), // normal
-    (KEY_3, 0, true),  // zEye buffer
-    (KEY_4, 1, false), // diffuse texture
-    (KEY_5, 2, false), // specular texture
-    (KEY_6, 0, true)  // SSAO test
-  )
+  def associations : List[(Int, Texture, Boolean)] = {
+    import Main._
+    List(
+      (KEY_1, finalFbo.tex, false), // standard view
+      (KEY_2, gbufFbo.colorTexAry(0), false), // normal
+      (KEY_3, gbufFbo.colorTexAry(0), true),  // zEye buffer
+      (KEY_4, gbufFbo.colorTexAry(1), false), // diffuse texture
+      (KEY_5, gbufFbo.colorTexAry(2), false), // specular texture
+      (KEY_6, ssaoFbo.tex, false),
+      (KEY_7, blurXFbo.tex, false),
+      (KEY_8, blurYFbo.tex, false)
+    )
+  }
   
   def update() = associations.foreach {
     case (key, _, _) => if(isKeyDown(key)) lastKey = key
   }
   
-  def getShader : Shader = 
-    if(lastKey == KEY_1 || lastKey > 6) 
-      Main.secondShader 
-    else Main.viewGbufsShader
+  def bindForTestShader(shader: Shader) = {    
+    val (_, tex, showW) = associations.find(_._1 == lastKey).get
+   
+    tex.bindAndSetShader(0, shader, "texture")
+    glUniform1i(glGetUniformLocation(shader.id, "showW"), if(showW) 1 else 0)
+  }
   
-  def bindUniforms(shader: Shader) = {
-    import GL20._
-    
-    val (_, gBufNum, optFlg) = associations.find(_._1 == lastKey).get
-    
-    if(lastKey > KEY_1 && lastKey <= KEY_5) {
-      glUniform1i(glGetUniformLocation(shader.id, "gBufNumber"), gBufNum)
-      glUniform1i(glGetUniformLocation(shader.id, "showW"), if(optFlg) 1 else 0) 
-    }
-    
-    if(lastKey == KEY_1 || lastKey == KEY_6) {
-      glUniform1i(glGetUniformLocation(shader.id, "showSSAO"), 
-        if(optFlg) 1 else 0)
+  def bindGBufs(shader: Shader) = {
+    Main.gbufFbo.colorTexAry.zipWithIndex.map { 
+      case (tex, texUnit) => tex.bind(texUnit)
     }
     
     List("nmlGbuf", "difGbuf", "spcGbuf").zipWithIndex.map {
       case (name, texUnit) => 
         glUniform1i(glGetUniformLocation(shader.id, name), texUnit)
     }
+  }
+  
+  def bindTexelSizes(shader: Shader) = {
+    glUniform1f(glGetUniformLocation(shader.id, "texelX"), 
+      1.0f/Main.width.toFloat)
+    glUniform1f(glGetUniformLocation(shader.id, "texelY"), 
+      1.0f/Main.height.toFloat)
   }
 }

@@ -6,11 +6,13 @@ import java.nio.{ByteBuffer, IntBuffer, ByteOrder}
 
 import org.lwjgl.opengl._
 
+import GL11._
+import GL12._
+import GL13._
+import GL20._
+
 // right now just means 2D texture
 trait Texture {
-  import GL11._
-  import GL12._
-  import GL13._
   
   val id = glGenTextures()
   
@@ -40,11 +42,14 @@ trait Texture {
     glBindTexture(GL_TEXTURE_2D, id)
     //println("active tex, texid : %d %d".format(texUnit, id))
   }
+  
+  def bindAndSetShader(texUnit: Int, shader: Shader, name: String) = {
+    bind(texUnit)
+    glUniform1i(glGetUniformLocation(shader.id, name), texUnit)
+  }
 }
 
 class ImageTexture(rcPath: String) extends Texture {
-  import GL11._
-  
   val img = ImageIO.read(getClass.getResource(rcPath))
   
   def width = img.getWidth
@@ -65,8 +70,6 @@ class BlankTexture(val width: Int, val height: Int,
 }
 
 class ColorTexture(r: Int, g: Int, b: Int) extends Texture {
-  import GL11._
-  
   def width = 1
   def height = 1
   def format = GL_RGBA
