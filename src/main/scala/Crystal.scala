@@ -68,14 +68,17 @@ class Crystal(val x: Float, val y: Float, val z: Float) extends Entity{
 
 	override def renderGL(shader: Shader) = {
 		import GL11._
+		val SCALE_FACTOR = 15.0f;
 
 		glColor3f(1, 0, 0)
 
+		glTranslatef(5, 5, 0)
+		glRotatef(-90, 1, 0, 0)
 		glBegin(GL_TRIANGLES)
 			for (poly <- 0 until polymanager.getMaxPolygonID(); vert <- 0 until 3) {
 				val sv:SimpleVector = polymanager.getTransformedVertex(poly, vert)
-				glVertex3f(sv.x, sv.y, sv.z)
-				println(poly + " " + vert)
+				glVertex3f(sv.x / SCALE_FACTOR, sv.y / SCALE_FACTOR, sv.z / SCALE_FACTOR)
+				println(polymanager.getPolygonTexture(poly))
 			}
 		glEnd()
 
