@@ -12,7 +12,7 @@ float rand(vec2 co){
 
 // Using custom z buffer version
 inline float zSample(vec2 texc) {
-  return -texture2D(nmlGbuf, texc).w;
+  return texture2D(nmlGbuf, texc).w-farClip;
 }
 
 void main()  
@@ -21,6 +21,7 @@ void main()
   int nAngles = 4;
   float lookupStep = 0.15;
   int nSamples = 3;
+  float epsilon = 0.1;
   float maxZdiff = 2.0;
   
   mat4 projMat = gl_TextureMatrix[0];
@@ -43,7 +44,7 @@ void main()
     vec3 rVec = vec3( 
       rand(texcoord), rand(texcoord+vec2(1,1)), rand(texcoord+vec2(2,2))
       )*2.0-1.0;
-    vec3 normal = texture2D(nmlGbuf, texcoord).xyz*2.0-1.0;
+    vec3 normal = texture2D(nmlGbuf, texcoord).xyz;
     
     float cumAmbientFactor = 0.;
     
@@ -61,11 +62,11 @@ void main()
         atan(sampleDir.z/sqrt(dot(sampleDir.xy,sampleDir.xy)));
       
       // angle sampled point makes from z-contour 
-      float maxHorizAngle = -PI/2.; // actually starts at -pi/2.
+      float maxHorizAngle = tangentAngle;
       float ambFactor = 0.0;
       
       for(float j=1.; j <= nSamples + 0.5; j++) {
-        float sampleDist = pow(j,1.5)*lookupStep*cos(tangentAngle);
+        float sampleDist = pow(j,1.5)*lookupStep; // sampleDist in view space
         
         vec3 lookupPt = originEye + sampleDist*sampleDir;
         
@@ -73,31 +74,25 @@ void main()
         vec3 lookupClip = lookupClipHomo.xyz/lookupClipHomo.w;
         vec2 lookupTexCoord = lookupClip.xy*0.5+0.5;
         
-        vec3 lookupNormal = texture2D(nmlGbuf, lookupTexCoord).xyz*2.0-1.0;
-                
-        float lookupPtActualZ = zSample( lookupTexCoord );
+        float lookupPtActualZ = 0;
+
+        lookupPtActualZ = zSample( lookupTexCoord );
         
         // difference between xy plane of origin and actual z
         float zDiff = lookupPtActualZ - originEye.z;
         
-        if(zDiff < maxZdiff) {
-            float horizAngle = atan(zDiff, sampleDist);
-            
+        if(abs(zDiff) > epsilon && zDiff < maxZdiff) {
+            float horizAngle = atan(zDiff, sampleDist/(cos(tangentAngle)));
             maxHorizAngle = max(maxHorizAngle, horizAngle);
-        
         }
       }
       
-      //ambFactor = 1.0-(sin(maxHorizAngle) - sin(tangentAngle));
-      ambFactor = 1.0-((maxHorizAngle - tangentAngle)/(PI/2.));
+      ambFactor = 1.0-((maxHorizAngle - tangentAngle)/(PI/2));
+      //ambFactor = (maxHorizAngle-tangentAngle)/PI;
       
       cumAmbientFactor += (1.0/float(nAngles))*(ambFactor);
     }
     
-    // treshold it
-    //if(cumAmbientFactor > 0.8) cumAmbientFactor = 1.0;
-    
-    //gl_FragColor = vec4(vec3(1,1,1)*(-originZeye*0.05), 1); 
     gl_FragColor = vec4(vec3(1,1,1)*(cumAmbientFactor), 1);    
   }
 }

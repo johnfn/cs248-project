@@ -22,9 +22,9 @@ object Main {
   val manager = new EntityManager()
   
   val gbufFbo = new MrtFloatFbo(3, width, height)
-  val ssaoFbo = new SimpleFbo(width/2, height/2, GL_RGBA, GL_RGBA)
-  val blurXFbo = new SimpleFbo(width/2, height/2, GL_RGBA, GL_RGBA)
-  val blurYFbo = new SimpleFbo(width/2, height/2, GL_RGBA, GL_RGBA)
+  val ssaoFbo = new SimpleFbo(width/2, height/2, GL_RGB, GL_RGB)
+  val blurXFbo = new SimpleFbo(width/2, height/2, GL_RGB, GL_RGB)
+  val blurYFbo = new SimpleFbo(width/2, height/2, GL_RGB, GL_RGB)
   val finalFbo = new SimpleFbo(width, height, GL_RGBA, GL_RGBA)
   
   val gbufShader = new Shader("gbufs", "gbufs")
@@ -33,6 +33,8 @@ object Main {
   val blurXShader = new Shader("minimal", "blurX")
   val blurYShader = new Shader("minimal", "blurY")
   val finalShader = new Shader("minimal", "final")
+  
+  var curLevel : Level = null
 
   def main(args:Array[String]) = {
     var fullscreen = false
@@ -96,9 +98,11 @@ object Main {
 
   def addObjects() = {
     val ghost = new Ghost()
+    
+    curLevel = new Level("level1")
 
     manager.add(camera)
-    manager.add(new Level("level1"))
+    manager.add(curLevel)
     manager.add(new Crystal(3.0f, 3.0f, 0.0f))
     manager.add(ghost)
     manager.add(new Protagonist(ghost))
@@ -134,7 +138,7 @@ object Main {
     ViewMode.bindGBufs(ssaoShader)
     
     drawQuad(ssaoShader)
-    /*
+    /**/
     // Render Blur X pass
     blurXFbo.bind()
     blurXShader.use()
@@ -147,19 +151,25 @@ object Main {
     blurYShader.use()
     blurXFbo.tex.bindAndSetShader(0, blurYShader, "texInp");
     ViewMode.bindTexelSizes(blurYShader)
-    drawQuad(blurYShader)*/
+    drawQuad(blurYShader)
     
     // Render final shader
     finalFbo.bind()
     finalShader.use()
     ViewMode.bindGBufs(finalShader)
+    //ssaoFbo.tex.bindAndSetShader(3, finalShader, "ssaoBuf");
     blurYFbo.tex.bindAndSetShader(3, finalShader, "ssaoBuf");
+    camera.passInUniforms(finalShader)
+    camera.putModelViewMatrixIntoTextureMat(0)
     drawQuad(finalShader)
     
     // Render Screen
     screenFbo.bind()
-    testShader.use()
+    testShader.use()    
     ViewMode.bindForTestShader(testShader)
+    
+    camera.loadGLMatrices()
+    curLevel.setLights()
     
     drawQuad(testShader)
   }
