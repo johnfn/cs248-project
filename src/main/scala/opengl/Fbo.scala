@@ -15,8 +15,10 @@ trait Fbo {
   def fboId: Int
   def bind()
     
-  def newTex(w: Int, h: Int, internalFmt: Int, fmt: Int) = {
-    val tex = new BlankTexture(w, h, internalFmt, fmt, GL_FLOAT)
+  def newTex(w: Int, h: Int, internalFmt: Int, fmt: Int, 
+    dataType: Int = GL_FLOAT) = 
+  {
+    val tex = new BlankTexture(w, h, internalFmt, fmt, dataType)
     tex.init()
     tex
   }
@@ -49,6 +51,7 @@ class MrtFloatFbo(nTargets: Int, w: Int, h: Int) extends Fbo {
   def bind() = {
     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fboId)
     glDrawBuffers(drawBuffers)
+    glViewport(0, 0, w, h)
   }
   
   def init() = {
@@ -86,6 +89,7 @@ class SimpleFbo(w: Int, h: Int, internalFmt: Int, fmt: Int) extends Fbo {
   
   def bind() = {
     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fboId)
+    glViewport(0, 0, w, h)
   }
   
   def init() = {
@@ -93,7 +97,7 @@ class SimpleFbo(w: Int, h: Int, internalFmt: Int, fmt: Int) extends Fbo {
     bind()
     
     tex = {
-      val tex = newTex(w, h, internalFmt, fmt)
+      val tex = newTex(w, h, internalFmt, fmt, GL_UNSIGNED_BYTE)
       glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, 
         GL_TEXTURE_2D, tex.id, 0)
       tex

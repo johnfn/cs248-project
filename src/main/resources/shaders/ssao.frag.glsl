@@ -18,10 +18,9 @@ inline float zSample(vec2 texc) {
 void main()  
 {
   float PI = 3.14159265358979323846264;
-  int nAngles = 2;
-  float lookupStep = 0.2;
-  int nSamples = 4;
-  float epsilon = 0.2;
+  int nAngles = 4;
+  float lookupStep = 0.15;
+  int nSamples = 3;
   float maxZdiff = 2.0;
   
   mat4 projMat = gl_TextureMatrix[0];
@@ -65,8 +64,8 @@ void main()
       float maxHorizAngle = -PI/2.; // actually starts at -pi/2.
       float ambFactor = 0.0;
       
-      for(int j=0; j < nSamples; j++) {
-        float sampleDist = float(j+1)*lookupStep*cos(tangentAngle);
+      for(float j=1.; j <= nSamples + 0.5; j++) {
+        float sampleDist = pow(j,1.5)*lookupStep*cos(tangentAngle);
         
         vec3 lookupPt = originEye + sampleDist*sampleDir;
         
@@ -75,25 +74,18 @@ void main()
         vec2 lookupTexCoord = lookupClip.xy*0.5+0.5;
         
         vec3 lookupNormal = texture2D(nmlGbuf, lookupTexCoord).xyz*2.0-1.0;
+                
+        float lookupPtActualZ = zSample( lookupTexCoord );
         
-        // only allow occlusion by surface with normal different from own
-        // this prevents self occlusion due to poor z depth
-        /*if(distance(lookupNormal, normal) < 0.1) {
-          maxHorizAngle = max(maxHorizAngle, tangentAngle);
-        } else {*/
+        // difference between xy plane of origin and actual z
+        float zDiff = lookupPtActualZ - originEye.z;
         
-          float lookupPtActualZ = zSample( lookupTexCoord );
-          
-          // difference between xy plane of origin and actual z
-          float zDiff = lookupPtActualZ - originEye.z;
-          
-          if(zDiff < maxZdiff) {
-              float horizAngle = atan(zDiff, sampleDist);
-              
-              maxHorizAngle = max(maxHorizAngle, horizAngle);
-          
-          }
-        //}
+        if(zDiff < maxZdiff) {
+            float horizAngle = atan(zDiff, sampleDist);
+            
+            maxHorizAngle = max(maxHorizAngle, horizAngle);
+        
+        }
       }
       
       //ambFactor = 1.0-(sin(maxHorizAngle) - sin(tangentAngle));

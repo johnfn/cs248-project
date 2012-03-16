@@ -22,9 +22,9 @@ object Main {
   val manager = new EntityManager()
   
   val gbufFbo = new MrtFloatFbo(3, width, height)
-  val ssaoFbo = new SimpleFbo(width, height, GL_RGBA, GL_RGBA)
-  val blurXFbo = new SimpleFbo(width, height, GL_RGBA, GL_RGBA)
-  val blurYFbo = new SimpleFbo(width, height, GL_RGBA, GL_RGBA)
+  val ssaoFbo = new SimpleFbo(width/2, height/2, GL_RGBA, GL_RGBA)
+  val blurXFbo = new SimpleFbo(width/2, height/2, GL_RGBA, GL_RGBA)
+  val blurYFbo = new SimpleFbo(width/2, height/2, GL_RGBA, GL_RGBA)
   val finalFbo = new SimpleFbo(width, height, GL_RGBA, GL_RGBA)
   
   val gbufShader = new Shader("gbufs", "gbufs")
@@ -147,8 +147,8 @@ object Main {
     blurYShader.use()
     blurXFbo.tex.bindAndSetShader(0, blurYShader, "texInp");
     ViewMode.bindTexelSizes(blurYShader)
-    drawQuad(blurYShader)
-    */
+    drawQuad(blurYShader)*/
+    
     // Render final shader
     finalFbo.bind()
     finalShader.use()
@@ -251,9 +251,10 @@ object ViewMode {
   }
   
   def bindTexelSizes(shader: Shader) = {
+    // since we are rendering at half-res
     glUniform1f(glGetUniformLocation(shader.id, "texelX"), 
-      1.0f/(Main.width.toFloat))  
+      2.0f/(Main.width.toFloat))  
     glUniform1f(glGetUniformLocation(shader.id, "texelY"), 
-      1.0f/(Main.height.toFloat))
+      2.0f/(Main.height.toFloat))
   }
 }

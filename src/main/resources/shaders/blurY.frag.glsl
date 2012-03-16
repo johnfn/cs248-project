@@ -13,12 +13,11 @@ void main()
   float accumWeights = 0.;
   float accumVal = 0.;
   
-  float sigmaSqSpatial = 6.0*6.0;
-  float sigmaSqValDist = 0.4*0.4;
+  float sigmaSqValDist = 0.5*0.5;
   
   float myValue = texture2D(texInp, texcoord).x;
   
-  for(int i=-5; i <= 5; i++) {
+  for(int i=-2; i <= 2; i++) {
     float texelOffset = float(i);
     float samplePtY = texcoord.y - texelOffset*texelY;
     
@@ -28,8 +27,7 @@ void main()
       
       float valDist = sampleValue - myValue;
       
-      float weight = 
-        gaus(texelOffset, sigmaSqSpatial)*gaus(valDist,sigmaSqValDist);
+      float weight = gaus(valDist,sigmaSqValDist);
         
       accumWeights += weight;
       accumVal += weight*sampleValue;
