@@ -71,16 +71,27 @@ void main()
         
         vec4 lookupClipHomo = gl_TextureMatrix[0]*vec4(lookupPt, 1.0);
         vec3 lookupClip = lookupClipHomo.xyz/lookupClipHomo.w;
+        vec2 lookupTexCoord = lookupClip.xy*0.5+0.5;
         
-        float lookupPtActualZ = zSample( lookupClip.xy*0.5+0.5 );
+        vec3 lookupNormal = texture2D(nmlGbuf, lookupTexCoord).xyz*2.0-1.0;
         
-        // difference between xy plane of origin and actual z
-        float zDiff = lookupPtActualZ - originEye.z;
+        // only allow occlusion by surface with normal different from own
+        // this prevents self occlusion due to poor z depth
+        if(distance(lookupNormal, normal) < 0.1) {
+          maxHorizAngle = max(maxHorizAngle, tangentAngle);
+        } else {
         
-        if(zDiff < maxZdiff) {        
-          float horizAngle = atan(zDiff, sampleDist);
+          float lookupPtActualZ = zSample( lookupTexCoord );
           
-          if(horizAngle > maxHorizAngle) maxHorizAngle = horizAngle;
+          // difference between xy plane of origin and actual z
+          float zDiff = lookupPtActualZ - originEye.z;
+          
+          if(zDiff < maxZdiff) {
+              float horizAngle = atan(zDiff, sampleDist);
+              
+              maxHorizAngle = max(maxHorizAngle, horizAngle);
+          
+          }
         }
       }
       

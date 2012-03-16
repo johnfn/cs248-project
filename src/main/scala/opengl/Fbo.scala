@@ -6,6 +6,7 @@ import java.nio._
 import GL11._
 import GL14._
 import GL20._
+import GL30._
 import EXTFramebufferObject._
 
 trait Fbo {

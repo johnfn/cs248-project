@@ -13,12 +13,12 @@ void main()
   float accumWeights = 0.;
   float accumVal = 0.;
   
-  float sigmaSqSpatial = 3.0*3.0;
+  float sigmaSqSpatial = 10.0*10.0;
   float sigmaSqValDist = 0.4*0.4;
   
   float myValue = texture2D(texInp, texcoord).x;
   
-  for(int i=-7; i <= 7; i++) {
+  for(int i=-5; i <= 5; i++) {
     float texelOffset = float(i);
     float samplePtX = texcoord.x - texelOffset*texelX;
     
