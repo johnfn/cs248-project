@@ -18,9 +18,9 @@ void main()
 {
   float PI = 3.14159265358979323846264;
   int nAngles = 2;
-  float lookupStep = 0.15;
+  float lookupStep = 0.2;
   int nSamples = 4;
-  float epsilon = 0.0;
+  float epsilon = 0.2;
   float maxZdiff = 2.0;
   
   mat4 projMat = gl_TextureMatrix[0];
@@ -65,7 +65,7 @@ void main()
       float ambFactor = 0.0;
       
       for(int j=0; j < nSamples; j++) {
-        float sampleDist = float(j+1)*lookupStep;//*cos(tangentAngle);
+        float sampleDist = float(j+1)*lookupStep*cos(tangentAngle);
         
         vec3 lookupPt = originEye + sampleDist*sampleDir;
         
@@ -77,17 +77,21 @@ void main()
         // difference between xy plane of origin and actual z
         float zDiff = lookupPtActualZ - originEye.z;
         
-        if(abs(zDiff) > epsilon && abs(zDiff) < maxZdiff) {        
+        if(zDiff < maxZdiff) {        
           float horizAngle = atan(zDiff, sampleDist);
           
           if(horizAngle > maxHorizAngle) maxHorizAngle = horizAngle;
         }
       }
       
+      //ambFactor = 1.0-(sin(maxHorizAngle) - sin(tangentAngle));
       ambFactor = 1.0-((maxHorizAngle - tangentAngle)/(PI/2.));
       
       cumAmbientFactor += (1.0/float(nAngles))*(ambFactor);
     }
+    
+    // treshold it
+    //if(cumAmbientFactor > 0.8) cumAmbientFactor = 1.0;
     
     gl_FragColor = vec4(vec3(1,1,1)*(cumAmbientFactor), 1);    
   }

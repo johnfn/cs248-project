@@ -139,28 +139,29 @@ object Main {
     blurXFbo.bind()
     blurXShader.use()
     ssaoFbo.tex.bindAndSetShader(0, blurXShader, "texInp");
+    ViewMode.bindTexelSizes(blurXShader)
     drawQuad(blurXShader)
     
     // Render Blur Y pass
     blurYFbo.bind()
     blurYShader.use()
     blurXFbo.tex.bindAndSetShader(0, blurYShader, "texInp");
+    ViewMode.bindTexelSizes(blurYShader)
     drawQuad(blurYShader)
     
     // Render final shader
-    screenFbo.bind()
-    //finalFbo.bind()
+    finalFbo.bind()
     finalShader.use()
     ViewMode.bindGBufs(finalShader)
     blurYFbo.tex.bindAndSetShader(3, finalShader, "ssaoBuf");
     drawQuad(finalShader)
     
-    /*// Render Screen
+    // Render Screen
     screenFbo.bind()
     testShader.use()
     ViewMode.bindForTestShader(testShader)
     
-    drawQuad(testShader)*/
+    drawQuad(testShader)
   }
   
   def drawQuad(shader: Shader) = {
@@ -249,8 +250,8 @@ object ViewMode {
   
   def bindTexelSizes(shader: Shader) = {
     glUniform1f(glGetUniformLocation(shader.id, "texelX"), 
-      1.0f/Main.width.toFloat)
+      1.0f/(Main.width.toFloat))  
     glUniform1f(glGetUniformLocation(shader.id, "texelY"), 
-      1.0f/Main.height.toFloat)
+      1.0f/(Main.height.toFloat))
   }
 }
