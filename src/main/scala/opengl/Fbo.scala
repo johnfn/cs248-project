@@ -15,8 +15,8 @@ trait Fbo {
   def fboId: Int
   def bind()
     
-  def newTex(w: Int, h: Int, fmt: Int) = {
-    val tex = new BlankTexture(w, h, fmt, GL_UNSIGNED_BYTE)
+  def newTex(w: Int, h: Int, internalFmt: Int, fmt: Int) = {
+    val tex = new BlankTexture(w, h, internalFmt, fmt, GL_FLOAT)
     tex.init()
     tex
   }
@@ -55,12 +55,14 @@ class MrtFloatFbo(nTargets: Int, w: Int, h: Int) extends Fbo {
     fboId = glGenFramebuffersEXT()
     bind()
       
-    depthTex = newTex(w, h, GL_DEPTH_COMPONENT)
+    depthTex = newTex(w, h, GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT)
     glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
       GL_TEXTURE_2D, depthTex.id, 0)
     
     colorTexAry = (0 until nTargets).toArray.map { i =>
-      val tex = newTex(w, h, GL_RGBA)
+      // First buffer holds z depths, so needs extra precision and an alpha
+      val tex = newTex(w, h, GL_RGBA16F, GL_RGBA)
+            
       glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT+i, 
         GL_TEXTURE_2D, tex.id, 0)
       tex
@@ -77,7 +79,7 @@ class MrtFloatFbo(nTargets: Int, w: Int, h: Int) extends Fbo {
   
 }
 
-class SimpleFbo(w: Int, h: Int, fmt: Int) extends Fbo {  
+class SimpleFbo(w: Int, h: Int, internalFmt: Int, fmt: Int) extends Fbo {  
   var fboId = 0
   
   var tex : Texture = null
@@ -91,7 +93,7 @@ class SimpleFbo(w: Int, h: Int, fmt: Int) extends Fbo {
     bind()
     
     tex = {
-      val tex = newTex(w, h, fmt)
+      val tex = newTex(w, h, internalFmt, fmt)
       glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, 
         GL_TEXTURE_2D, tex.id, 0)
       tex

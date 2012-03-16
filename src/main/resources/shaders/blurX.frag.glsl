@@ -13,7 +13,7 @@ void main()
   float accumWeights = 0.;
   float accumVal = 0.;
   
-  float sigmaSqSpatial = 10.0*10.0;
+  float sigmaSqSpatial = 6.0*6.0;
   float sigmaSqValDist = 0.4*0.4;
   
   float myValue = texture2D(texInp, texcoord).x;

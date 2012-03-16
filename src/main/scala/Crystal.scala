@@ -76,7 +76,7 @@ class Crystal(val x: Float, val y: Float, val z: Float) extends Entity{
 			for (poly <- 0 until polymanager.getMaxPolygonID(); vert <- 0 until 3) {
 				val sv:SimpleVector = polymanager.getTransformedVertex(poly, vert)
 				glVertex3f(sv.x / SCALE_FACTOR, sv.y / SCALE_FACTOR, sv.z / SCALE_FACTOR)
-				println(polymanager.getPolygonTexture(poly))
+				//println(polymanager.getPolygonTexture(poly))
 			}
 		glEnd()
 

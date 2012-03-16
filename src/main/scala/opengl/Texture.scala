@@ -20,6 +20,7 @@ trait Texture {
   def height: Int
   def initData : ByteBuffer = null
   
+  def internalFormat: Int
   def format: Int
   def dataType: Int
   
@@ -33,7 +34,7 @@ trait Texture {
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
     
-    glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format,
+    glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format,
       dataType, initData)
   }
   
@@ -55,6 +56,7 @@ class ImageTexture(rcPath: String) extends Texture {
   def width = img.getWidth
   def height = img.getHeight
   
+  def internalFormat = GL_RGBA
   def format = GL_RGBA
   def dataType = GL_UNSIGNED_BYTE
   
@@ -62,7 +64,7 @@ class ImageTexture(rcPath: String) extends Texture {
 }
 
 class BlankTexture(val width: Int, val height: Int, 
-                   val format: Int, val dataType: Int) 
+                   val internalFormat: Int, val format: Int, val dataType: Int) 
   extends Texture
 {
   // use for FBOs, so need linear filtering
@@ -72,7 +74,8 @@ class BlankTexture(val width: Int, val height: Int,
 class ColorTexture(r: Int, g: Int, b: Int) extends Texture {
   def width = 1
   def height = 1
-  def format = GL_RGBA
+  def internalFormat = GL_RGBA
+  def format = internalFormat
   def dataType = GL_UNSIGNED_BYTE
   
   override def initData = {

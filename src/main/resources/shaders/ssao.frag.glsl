@@ -1,6 +1,7 @@
 uniform sampler2D nmlGbuf;
 uniform sampler2D difGbuf;
 uniform sampler2D spcGbuf;
+//uniform sampler2D zBuf;
 
 uniform float farClip;
 varying vec2 texcoord;
@@ -9,9 +10,9 @@ float rand(vec2 co){
     return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
 }
 
-float zSample(vec2 texc) {
-  float normalizeNegativeZ = texture2D(nmlGbuf, texc).w; 
-  return (farClip*0.4)*(normalizeNegativeZ-1.0);
+// Using custom z buffer version
+inline float zSample(vec2 texc) {
+  return -texture2D(nmlGbuf, texc).w;
 }
 
 void main()  
@@ -25,7 +26,7 @@ void main()
   
   mat4 projMat = gl_TextureMatrix[0];
   
-  if(texture2D(nmlGbuf, texcoord).xyz != vec3(0,0,0)) {
+  if(texture2D(nmlGbuf, texcoord).xyz != vec3(0, 0, 0)) {
   
     vec2 originNdcXY = vec2(texcoord)*2.0-1.0;
     
@@ -77,9 +78,9 @@ void main()
         
         // only allow occlusion by surface with normal different from own
         // this prevents self occlusion due to poor z depth
-        if(distance(lookupNormal, normal) < 0.1) {
+        /*if(distance(lookupNormal, normal) < 0.1) {
           maxHorizAngle = max(maxHorizAngle, tangentAngle);
-        } else {
+        } else {*/
         
           float lookupPtActualZ = zSample( lookupTexCoord );
           
@@ -92,7 +93,7 @@ void main()
               maxHorizAngle = max(maxHorizAngle, horizAngle);
           
           }
-        }
+        //}
       }
       
       //ambFactor = 1.0-(sin(maxHorizAngle) - sin(tangentAngle));
@@ -104,6 +105,7 @@ void main()
     // treshold it
     //if(cumAmbientFactor > 0.8) cumAmbientFactor = 1.0;
     
+    //gl_FragColor = vec4(vec3(1,1,1)*(-originZeye*0.05), 1); 
     gl_FragColor = vec4(vec3(1,1,1)*(cumAmbientFactor), 1);    
   }
 }

@@ -22,10 +22,10 @@ object Main {
   val manager = new EntityManager()
   
   val gbufFbo = new MrtFloatFbo(3, width, height)
-  val ssaoFbo = new SimpleFbo(width, height, GL_RGBA) // GL_LUMIANCE crashes
-  val blurXFbo = new SimpleFbo(width, height, GL_RGBA)
-  val blurYFbo = new SimpleFbo(width, height, GL_RGBA)
-  val finalFbo = new SimpleFbo(width, height, GL_RGBA)
+  val ssaoFbo = new SimpleFbo(width, height, GL_RGBA, GL_RGBA)
+  val blurXFbo = new SimpleFbo(width, height, GL_RGBA, GL_RGBA)
+  val blurYFbo = new SimpleFbo(width, height, GL_RGBA, GL_RGBA)
+  val finalFbo = new SimpleFbo(width, height, GL_RGBA, GL_RGBA)
   
   val gbufShader = new Shader("gbufs", "gbufs")
   val testShader = new Shader("minimal", "test")
@@ -52,7 +52,7 @@ object Main {
   def init(fullscreen:Boolean) = {
     Display.setTitle(GAME_TITLE)
     Display.setFullscreen(fullscreen)
-    Display.setVSyncEnabled(true)
+    //Display.setVSyncEnabled(true)
     Display.setDisplayMode(new DisplayMode(width,height))
     Display.create()
 
@@ -134,7 +134,7 @@ object Main {
     ViewMode.bindGBufs(ssaoShader)
     
     drawQuad(ssaoShader)
-    
+    /*
     // Render Blur X pass
     blurXFbo.bind()
     blurXShader.use()
@@ -148,7 +148,7 @@ object Main {
     blurXFbo.tex.bindAndSetShader(0, blurYShader, "texInp");
     ViewMode.bindTexelSizes(blurYShader)
     drawQuad(blurYShader)
-    
+    */
     // Render final shader
     finalFbo.bind()
     finalShader.use()
@@ -195,7 +195,7 @@ object Main {
       updateGame()
       Display.update()
       renderGame()
-      Display.sync(FRAMERATE)
+      //Display.sync(FRAMERATE)
       framesDrawnSinceLastPrint += 1
      
       val tNow = System.nanoTime()/1000000
@@ -246,6 +246,8 @@ object ViewMode {
       case (name, texUnit) => 
         glUniform1i(glGetUniformLocation(shader.id, name), texUnit)
     }
+    
+    //Main.gbufFbo.depthTex.bindAndSetShader(3, shader, "zBuf")
   }
   
   def bindTexelSizes(shader: Shader) = {

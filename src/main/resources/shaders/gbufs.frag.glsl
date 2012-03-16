@@ -16,11 +16,10 @@ void main()
 { 
    // Normal compressed to (0, 1) range in EYE space
    // Z buffer only focuses on nearby stuff for ambient occlusion
-   float normalizedNegZeye = 1+(vEyeHomo.z/vEyeHomo.w)/(farClip*0.4);
+   float zEye = vEyeHomo.z/vEyeHomo.w;
    //gl_FragData[0] = vec4(vec3(1,1,1)*(-vEyeHomo.x/vEyeHomo.w)*0.05,
-   //gl_FragData[0] = vec4(vec3(1,1,1)*(-vEyeHomo.z/vEyeHomo.w)*0.05, 
-   gl_FragData[0] = vec4(Ncompressed, 
-      normalizedNegZeye);
+   //gl_FragData[0] = vec4(vec3(1,1,1)*(-vEyeHomo.z/vEyeHomo.w)*0.05, 1.0); 
+   gl_FragData[0] = vec4(Ncompressed, -zEye);
    
    // Diffuse color
    gl_FragData[1] = texture2D(texDif, texcoord);
