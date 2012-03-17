@@ -37,7 +37,7 @@ class CrystalModel()
 							 new ColorTexture(0, 0, 0)) {
 
 	// The (0) is to get the first model out of a potential list of models.
-	var polymanager:PolygonManager = Loader.load3DS("models/plant.3ds",2.5f)(0).getPolygonManager()
+	var polymanager:PolygonManager = Loader.load3DS("src/main/resources/models/plant.3ds",2.5f)(0).getPolygonManager()
 	val SCALE_FACTOR = 25.0f
 
 	override def name() = "crystal"
