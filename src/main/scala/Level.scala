@@ -11,10 +11,10 @@ import edu.stanford.cs248.project.entity._
 import edu.stanford.cs248.project.opengl._
 import edu.stanford.cs248.project.util._
 
-class LevelModel(val name: String) 
+class LevelModel(val name: String)
   extends TexturedVBOModel(
     new ImageTexture("/textures/terrain_d.png"),
-    new ColorTexture(0, 0, 0)) 
+    new ColorTexture(0, 0, 0))
 {
   val heightMap = new ImageMapGrayscale("/levels/"+name+"_h.png")
   val deltaXMap = heightMap.deltaXMap
@@ -24,9 +24,9 @@ class LevelModel(val name: String)
   val ySize = heightMap.ySize
 
   val zScale = 0.03f
-  
+
   var indexCount = 0
-  
+
   val texMap = new ImageMapObjMap("/levels/"+name+"_t.png",
     Map(
       0x000000->0,
@@ -58,7 +58,7 @@ class LevelModel(val name: String)
       (-0.5f, -0.5f), (0.5f, -0.5f), (0.5f, 0.5f), (-0.5f, 0.5f))
 
     var vertVec = new scala.collection.immutable.VectorBuilder[Vertex]()
-      
+
     for(y <- 0 until ySize; x <- 0 until xSize) {
       val xf = x.toFloat
       val yf = y.toFloat
@@ -67,87 +67,89 @@ class LevelModel(val name: String)
       val dzdy = deltaYMap.valueAt(x,y)*zScale
 
       val hc = heightMap.valueAt(x,y).asInstanceOf[Byte]
-      
+
       // get texture "s" coord
       val texSUnit = 1.0f/8.0f
       val texTUnit = 1.0f/3.0f
-      
+
       // paint floor tiles
       val floorS0 = texSUnit*texMap.valueAt(x, y)
       vertVec ++= floorCorners.map { case(dx, dy) =>
         Vertex(
           xf+dx, yf+dy, zf,
           0, 0, 1,
-          floorS0+(dx+0.5f)*texSUnit, (2+dy+0.5f)*texTUnit)
+          // The "- dx/50.0f" and "- dy/50.0f" nudges the texture coordinates just
+          // slightly inwards, so that little white dots don't appear.
+          floorS0+(dx+0.5f)*texSUnit - dx/50.0f, (2+dy+0.5f)*texTUnit - dy/50.0f)
       }
-      
+
       // sub 'x' or 'y' for 'u'
       def commonValues(dzdu: Float) = {
         val nu = if(dzdu > 0) -1.0f else 1.0f
         val zBot = min(zf, zf+dzdu)
         val zHeight = abs(dzdu)
-        
+
         // drop "top" tile
         val topTileHeight = min(1.0f, zHeight)
         val topTileZTop   = zBot+zHeight
-        
+
         (nu, zBot, zHeight, topTileHeight, topTileZTop)
       }
-      
+
       // paint x facing walls
       if(dzdx != 0) {
         val (nx, zBot, zHeight, topTileHeight, topTileZTop) = commonValues(dzdx)
-        
+
         // use texture of "higher" tile"
         val texS0 = texSUnit*texMap.valueAt(if(dzdx < 0) x else x+1, y)
-        
+
         def drawXWall(tileZTop: Float, tileZHeight: Float, texT0Units: Float) =
         {
           vertVec ++= floorCorners.map { case(dy, dz) =>
             Vertex(
               xf+0.5f, yf+dy*nx, tileZTop+(dz-0.5f)*tileZHeight,
               nx, 0, 0,
-              texS0+(dy+0.5f)*texSUnit, 
+              texS0+(dy+0.5f)*texSUnit,
               (texT0Units+(1.0f-tileZHeight)+(dz+0.5f)*tileZHeight)*texTUnit)
-          }          
+          }
         }
-        
+
         // draw the top vertical tile
         drawXWall(topTileZTop, topTileHeight, 1)
-        
+
         // draw rest of the vertical tiles
         if(zHeight > 1.0) {
-          for(tileTop <- 
-                Range.Double(zBot+zHeight-1, zBot-1, -1).map(_.toFloat)) 
+          for(tileTop <-
+                Range.Double(zBot+zHeight-1, zBot-1, -1).map(_.toFloat))
           {
             drawXWall(tileTop, min(1.0f, tileTop-zBot), 0)
           }
         }
       }
-      
+
       if(dzdy != 0) {
         val (ny, zBot, zHeight, topTileHeight, topTileZTop) = commonValues(dzdy)
-        
+
         // use texture of "higher" tile"
         val texS0 = texSUnit*texMap.valueAt(x, if(dzdy < 0) y else y+1)
-        
+
         def drawYWall(tileZTop: Float, tileZHeight: Float, texT0Units: Float) =
         {
           vertVec ++= floorCorners.map { case(dx, dz) =>
             Vertex(
               xf-dx*ny, yf+0.5f, tileZTop+(dz-0.5f)*tileZHeight,
               0, ny, 0,
-              texS0+(dx+0.5f)*texSUnit, 
+              texS0+(dx+0.5f)*texSUnit,
               (texT0Units+(1.0f-tileZHeight)+(dz+0.5f)*tileZHeight)*texTUnit)
-          }          
+          }
         }
-        
+
         // draw the top vertical tile
         drawYWall(topTileZTop, topTileHeight, 1)
-        
+
         // draw rest of the vertical tiles
         if(zHeight > 1.0) {
-          for(tileTop <- 
+          for(tileTop <-
                 Range.Double(zBot+zHeight-1, zBot-1, -1).map(_.toFloat))
           {
             drawYWall(tileTop, min(1.0f, tileTop-zBot), 0)
@@ -155,7 +157,7 @@ class LevelModel(val name: String)
         }
       }
     }
-    
+
     vertVec.result()
   }
 
@@ -175,18 +177,18 @@ class Level(val name: String) extends VBOModelEntity {
   def zScale = model.zScale
 
   override def traits() = List("level", "render", "update")
-  
+
   def setLights() = {
     import GL11._
-    
+
     // set one directional light
     val lightId = GL_LIGHT0
-    
+
     glEnable(GL_LIGHTING);
-    
+
     val buf = ByteBuffer
       .allocateDirect(16).order(ByteOrder.nativeOrder()).asFloatBuffer()
-    
+
     buf.put(Array(3.0f, 3.0f, 3.0f, 3.0f)).flip()
     glLight(lightId, GL_AMBIENT,  buf)
     buf.put(Array(0.5f, 0.5f, 0.5f, 1.0f)).flip()
