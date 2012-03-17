@@ -6,11 +6,13 @@ import java.nio.{ByteBuffer, IntBuffer, ByteOrder}
 
 import org.lwjgl.opengl._
 
+import GL11._
+import GL12._
+import GL13._
+import GL20._
+
 // right now just means 2D texture
 trait Texture {
-  import GL11._
-  import GL12._
-  import GL13._
   
   val id = glGenTextures()
   
@@ -18,18 +20,21 @@ trait Texture {
   def height: Int
   def initData : ByteBuffer = null
   
+  def internalFormat: Int
   def format: Int
   def dataType: Int
+  
+  def filter = GL_NEAREST
   
   def init() = {
     // do all tex initialization work on texture unit 0
     bind(0)
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter)
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
     
-    glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format,
+    glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format,
       dataType, initData)
   }
   
@@ -38,16 +43,20 @@ trait Texture {
     glBindTexture(GL_TEXTURE_2D, id)
     //println("active tex, texid : %d %d".format(texUnit, id))
   }
+  
+  def bindAndSetShader(texUnit: Int, shader: Shader, name: String) = {
+    bind(texUnit)
+    glUniform1i(glGetUniformLocation(shader.id, name), texUnit)
+  }
 }
 
 class ImageTexture(rcPath: String) extends Texture {
-  import GL11._
-  
   val img = ImageIO.read(getClass.getResource(rcPath))
   
   def width = img.getWidth
   def height = img.getHeight
   
+  def internalFormat = GL_RGBA
   def format = GL_RGBA
   def dataType = GL_UNSIGNED_BYTE
   
@@ -55,17 +64,18 @@ class ImageTexture(rcPath: String) extends Texture {
 }
 
 class BlankTexture(val width: Int, val height: Int, 
-                   val format: Int, val dataType: Int) 
+                   val internalFormat: Int, val format: Int, val dataType: Int) 
   extends Texture
 {
+  // use for FBOs, so need linear filtering
+  override def filter = GL11.GL_LINEAR 
 }
 
 class ColorTexture(r: Int, g: Int, b: Int) extends Texture {
-  import GL11._
-  
   def width = 1
   def height = 1
-  def format = GL_RGBA
+  def internalFormat = GL_RGBA
+  def format = internalFormat
   def dataType = GL_UNSIGNED_BYTE
   
   override def initData = {

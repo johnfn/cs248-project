@@ -75,53 +75,5 @@ class Crystal(val x: Float, val y: Float, val z: Float) extends VBOModelEntity {
 	val DIFF_UNIT = 0
 	val SPEC_UNIT = 1
 
-	/*
-	override def doInitGL() = {
-		polymanager = Loader.load3DS("models/plant.3ds",2.5f)(0).getPolygonManager()
-
-		var objs:Array[Object3D] = Loader.load3DS("models/plant.3ds",2.5f);
-
-		texDiff.init()
-		texSpec.init()
-	}
-	*/
-
-	/*
-	override def renderGL(shader: Shader) = {
-		import GL11._
-		import GL13._
-		import GL20._
-
-		val SCALE_FACTOR = 15.0f
-
-		// Need to eventually merge this code with the code in TexturedVBOModel.
-		// I could just write out every vertex to a VBO... might save a lot of code duplication...
-
-		texDiff.bind(DIFF_UNIT)
-		texDiff.bind(SPEC_UNIT)
-
-	    glUniform1i(glGetUniformLocation(shader.id, "texDif"), DIFF_UNIT)
-	    glUniform1i(glGetUniformLocation(shader.id, "texSpc"), SPEC_UNIT)
-
-	    // Bind texture coordinates
-	    glEnableVertexAttribArray(glGetAttribLocation(shader.id, "texcoordIn"))
-	    glVertexAttribPointer(glGetAttribLocation(shader.id, "texcoordIn"),
-	      2, GL_FLOAT, false, Vertex.strideSize, Vertex.texOffset)
-
-		glTranslatef(5, 5, 0)
-		glBegin(GL_TRIANGLES)
-		for (poly <- 0 until polymanager.getMaxPolygonID(); vert <- 0 until 3) {
-			val verts:SimpleVector = polymanager.getTransformedVertex(poly, vert)
-			val texture_verts:SimpleVector = polymanager.getTextureUV(poly, vert)
-			glVertex3f(verts.x / SCALE_FACTOR, verts.y / SCALE_FACTOR, verts.z / SCALE_FACTOR)
-			glTexCoord2f(texture_verts.x, texture_verts.y)
-			// This may be helpful if we have multiple textures.
-			//(polymanager.getPolygonTexture(poly))
-		}
-		glEnd()
-
-	}
-	*/
-
 	override def traits() = List("render", "update", "crystal")
 }

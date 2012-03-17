@@ -4,6 +4,8 @@ import org.lwjgl.opengl._
 import org.lwjgl.input.Keyboard._
 import org.lwjgl.input._
 import GL11._
+import GL20._
+
 import math._
 import scala.util.control.Breaks._
 
@@ -19,11 +21,20 @@ object Main {
   val camera = new Camera()
   val manager = new EntityManager()
   
-  val gbufFbo = new MrtFloatFbo(4, width, height)
+  val gbufFbo = new MrtFloatFbo(3, width, height)
+  val ssaoFbo = new SimpleFbo(width/2, height/2, GL_RGB, GL_RGB)
+  val blurXFbo = new SimpleFbo(width/2, height/2, GL_RGB, GL_RGB)
+  val blurYFbo = new SimpleFbo(width/2, height/2, GL_RGB, GL_RGB)
+  val finalFbo = new SimpleFbo(width, height, GL_RGBA, GL_RGBA)
   
   val gbufShader = new Shader("gbufs", "gbufs")
-  val viewGbufsShader = new Shader("minimal", "viewGbufs")
-  val secondShader = new Shader("minimal", "second")
+  val testShader = new Shader("minimal", "test")
+  val ssaoShader = new Shader("minimal", "ssao")
+  val blurXShader = new Shader("minimal", "blurX")
+  val blurYShader = new Shader("minimal", "blurY")
+  val finalShader = new Shader("minimal", "final")
+  
+  var curLevel : Level = null
 
   def main(args:Array[String]) = {
     var fullscreen = false
@@ -43,7 +54,7 @@ object Main {
   def init(fullscreen:Boolean) = {
     Display.setTitle(GAME_TITLE)
     Display.setFullscreen(fullscreen)
-    Display.setVSyncEnabled(true)
+    //Display.setVSyncEnabled(true)
     Display.setDisplayMode(new DisplayMode(width,height))
     Display.create()
 
@@ -66,9 +77,15 @@ object Main {
       shader.use()
     }
        
-    List(gbufShader, viewGbufsShader, secondShader).foreach(loadShader)
+    List(
+      gbufShader, testShader, ssaoShader, blurXShader, blurYShader, finalShader)
+      .foreach(loadShader)
     
     gbufFbo.init()
+    ssaoFbo.init()
+    blurXFbo.init()
+    blurYFbo.init()
+    finalFbo.init()
 
     glViewport(0, 0, width, height)
     glEnable(GL_DEPTH_TEST)
@@ -81,9 +98,11 @@ object Main {
 
   def addObjects() = {
     val ghost = new Ghost()
+    
+    curLevel = new Level("level1")
 
     manager.add(camera)
-    manager.add(new Level("level1"))
+    manager.add(curLevel)
     manager.add(new Crystal(3.0f, 3.0f, 0.0f))
     manager.add(ghost)
     manager.add(new Protagonist(ghost))
@@ -100,20 +119,62 @@ object Main {
   }
 
   def renderGame() = {
-    import GL20._
-    
+    // Render G - buffers
     gbufFbo.bind()
     gbufShader.use()
-    
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     camera.loadGLMatrices()
+    camera.passInUniforms(gbufShader)
     
     manager.renderAll(gbufShader)
     
-    screenFbo.bind()
-    val screenShader = ViewMode.getShader
-    screenShader.use()
+    // Render SSAO pass
+    ssaoFbo.bind()
+    ssaoShader.use()
     
+    camera.passInUniforms(ssaoShader)
+    camera.putModelViewMatrixIntoTextureMat(0)
+    ViewMode.bindGBufs(ssaoShader)
+    
+    drawQuad(ssaoShader)
+    /**/
+    // Render Blur X pass
+    blurXFbo.bind()
+    blurXShader.use()
+    ssaoFbo.tex.bindAndSetShader(0, blurXShader, "texInp");
+    ViewMode.bindTexelSizes(blurXShader)
+    drawQuad(blurXShader)
+    
+    // Render Blur Y pass
+    blurYFbo.bind()
+    blurYShader.use()
+    blurXFbo.tex.bindAndSetShader(0, blurYShader, "texInp");
+    ViewMode.bindTexelSizes(blurYShader)
+    drawQuad(blurYShader)
+    
+    // Render final shader
+    finalFbo.bind()
+    finalShader.use()
+    ViewMode.bindGBufs(finalShader)
+    //ssaoFbo.tex.bindAndSetShader(3, finalShader, "ssaoBuf");
+    blurYFbo.tex.bindAndSetShader(3, finalShader, "ssaoBuf");
+    camera.passInUniforms(finalShader)
+    camera.putModelViewMatrixIntoTextureMat(0)
+    drawQuad(finalShader)
+    
+    // Render Screen
+    screenFbo.bind()
+    testShader.use()    
+    ViewMode.bindForTestShader(testShader)
+    
+    camera.loadGLMatrices()
+    curLevel.setLights()
+    
+    drawQuad(testShader)
+  }
+  
+  def drawQuad(shader: Shader) = {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
@@ -121,14 +182,7 @@ object Main {
     glMatrixMode(GL_MODELVIEW)
     glLoadIdentity()
     
-    // bind 4-g buffers
-    gbufFbo.colorTexAry.zipWithIndex.map { 
-      case (tex, texUnit) => tex.bind(texUnit)
-    }
-    
-    ViewMode.bindUniforms(screenShader)
-    
-    val texCoordLoc = glGetAttribLocation(screenShader.id, "texcoordIn")
+    val texCoordLoc = glGetAttribLocation(shader.id, "texcoordIn")
       
     glBegin(GL_QUADS)
       glVertexAttrib2f(texCoordLoc, 0, 0)
@@ -151,7 +205,7 @@ object Main {
       updateGame()
       Display.update()
       renderGame()
-      Display.sync(FRAMERATE)
+      //Display.sync(FRAMERATE)
       framesDrawnSinceLastPrint += 1
      
       val tNow = System.nanoTime()/1000000
@@ -168,35 +222,49 @@ object Main {
 object ViewMode {
   var lastKey = KEY_1
   
-  def associations = List(
-    (KEY_1, 0, false), // standard view
-    (KEY_2, 0, false), // positions
-    (KEY_3, 1, false), // normals
-    (KEY_4, 1, true) , // depths
-    (KEY_5, 2, false), // diffuse texture
-    (KEY_6, 3, false) // specular texture
-  )
+  def associations : List[(Int, Texture, Boolean)] = {
+    import Main._
+    List(
+      (KEY_1, finalFbo.tex, false), // standard view
+      (KEY_2, gbufFbo.colorTexAry(0), false), // normal
+      (KEY_3, gbufFbo.colorTexAry(0), true),  // zEye buffer
+      (KEY_4, gbufFbo.colorTexAry(1), false), // diffuse texture
+      (KEY_5, gbufFbo.colorTexAry(2), false), // specular texture
+      (KEY_6, ssaoFbo.tex, false),
+      (KEY_7, blurXFbo.tex, false),
+      (KEY_8, blurYFbo.tex, false)
+    )
+  }
   
   def update() = associations.foreach {
     case (key, _, _) => if(isKeyDown(key)) lastKey = key
   }
   
-  def getShader : Shader = 
-    if(lastKey == KEY_1) Main.secondShader else Main.viewGbufsShader
+  def bindForTestShader(shader: Shader) = {    
+    val (_, tex, showW) = associations.find(_._1 == lastKey).get
+   
+    tex.bindAndSetShader(0, shader, "texture")
+    glUniform1i(glGetUniformLocation(shader.id, "showW"), if(showW) 1 else 0)
+  }
   
-  def bindUniforms(shader: Shader) = {
-    import GL20._
-    
-    val (_, gBufNum, showW) = associations.find(_._1 == lastKey).get
-    
-    if(lastKey <= KEY_6) {
-      glUniform1i(glGetUniformLocation(shader.id, "gBufNumber"), gBufNum)
-      glUniform1i(glGetUniformLocation(shader.id, "showW"), if(showW) 1 else 0)
+  def bindGBufs(shader: Shader) = {
+    Main.gbufFbo.colorTexAry.zipWithIndex.map { 
+      case (tex, texUnit) => tex.bind(texUnit)
     }
     
-    List("posGbuf", "nmlGbuf", "difGbuf", "spcGbuf").zipWithIndex.map {
+    List("nmlGbuf", "difGbuf", "spcGbuf").zipWithIndex.map {
       case (name, texUnit) => 
         glUniform1i(glGetUniformLocation(shader.id, name), texUnit)
     }
+    
+    //Main.gbufFbo.depthTex.bindAndSetShader(3, shader, "zBuf")
+  }
+  
+  def bindTexelSizes(shader: Shader) = {
+    // since we are rendering at half-res
+    glUniform1f(glGetUniformLocation(shader.id, "texelX"), 
+      2.0f/(Main.width.toFloat))  
+    glUniform1f(glGetUniformLocation(shader.id, "texelY"), 
+      2.0f/(Main.height.toFloat))
   }
 }

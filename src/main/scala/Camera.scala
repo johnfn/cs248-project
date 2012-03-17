@@ -1,12 +1,17 @@
 package edu.stanford.cs248.project
 
-import org.lwjgl.opengl.GL11
+import org.lwjgl.opengl._
 import org.lwjgl.util.glu.Project
 import org.lwjgl.input.Mouse
+
+import GL11._
+import GL13._
+import GL20._
 
 import scala.math._
 
 import edu.stanford.cs248.project.entity._
+import edu.stanford.cs248.project.opengl._
 
 class Camera extends Entity {
 
@@ -19,17 +24,40 @@ class Camera extends Entity {
   var camTheta = (60.0/180.0*Pi).asInstanceOf[Float]
   var camPhi = (5.0/4.0*Pi).asInstanceOf[Float]
 
+  def farClip = 60.0f
+  
   def loadGLMatrices() {
-    GL11.glMatrixMode(GL11.GL_PROJECTION)
-    GL11.glLoadIdentity()
-
+    glMatrixMode(GL_PROJECTION)
+    glLoadIdentity()
+    multPerspectiveMatrix()
+    
+    glMatrixMode(GL_MODELVIEW)
+    glLoadIdentity()
+    multModelViewMatrix()
+  }
+  
+  def putModelViewMatrixIntoTextureMat(texUnit: Int) = {
+    glActiveTexture(GL_TEXTURE0+texUnit)
+    glMatrixMode(GL_TEXTURE)
+    glLoadIdentity()
+    
+    multPerspectiveMatrix()
+    
+    glMatrixMode(GL_MODELVIEW)
+    glActiveTexture(GL_TEXTURE0)
+  }
+  
+  def multPerspectiveMatrix() {
     // 90 degrees vertical fov, 16:9 aspect ratio
     // clip at 0.1 and 500
-    Project.gluPerspective(90, 16.0f/9.0f, 0.1f, 150f)
-
-    GL11.glMatrixMode(GL11.GL_MODELVIEW)
-    GL11.glLoadIdentity()
-
+    Project.gluPerspective(90, 16.0f/9.0f, 0.1f, farClip)
+  }
+  
+  def passInUniforms(shader: Shader) {
+    glUniform1f(glGetUniformLocation(shader.id, "farClip"), farClip)
+  }
+  
+  def multModelViewMatrix() {
     val camX = (camR*cos(camPhi)*sin(camTheta) + centerX).asInstanceOf[Float]
     val camY = (camR*sin(camPhi)*sin(camTheta) + centerY).asInstanceOf[Float]
     val camZ = (camR*cos(camTheta) + centerZ).asInstanceOf[Float]
