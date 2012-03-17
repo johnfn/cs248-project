@@ -66,14 +66,7 @@ class CrystalModel()
 }
 
 class Crystal(val x: Float, val y: Float, val z: Float) extends VBOModelEntity {
-	//val model = new SquareModel(x, y, z) // old color: , List(0, 0, 250))
 	val model = new CrystalModel()
-	var plant:Object3D = null
-	var polymanager:PolygonManager = null
-	val texDiff = new ImageTexture("/textures/plant.jpg")
-	val texSpec = new ColorTexture(0, 0, 0)
-	val DIFF_UNIT = 0
-	val SPEC_UNIT = 1
 
 	override def traits() = List("render", "update", "crystal")
 }
