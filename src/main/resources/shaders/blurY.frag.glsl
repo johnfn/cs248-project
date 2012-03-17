@@ -13,7 +13,7 @@ void main()
   float accumWeights = 0.;
   float accumVal = 0.;
   
-  float sigmaSqPixDist = 4.0*4.0;
+  float sigmaSqPixDist = 6.0*6.0;
   float sigmaSqValDist = 0.2*0.2;
   
   float myValue = texture2D(texInp, texcoord).x;
@@ -38,7 +38,7 @@ void main()
   float finalVal = accumVal/accumWeights;
   
   // darken it a bit
-  float zeroPt = .4;
+  float zeroPt = .3;
   finalVal = max(finalVal-zeroPt, 0)*(1./(1.-zeroPt));
   
   gl_FragColor = vec4(vec3(1,1,1)*finalVal, texcoord);

@@ -66,7 +66,8 @@ void main()
       float ambFactor = 0.0;
       
       for(float j=1.; j <= nSamples + 0.5; j++) {
-        float sampleDist = pow(j,1.5)*lookupStep; // sampleDist in view space
+        float sampleDist = j*lookupStep/pow(cos(tangentAngle), 2.5); 
+        // sampleDist in view space
         
         vec3 lookupPt = originEye + sampleDist*sampleDir;
         
@@ -82,13 +83,13 @@ void main()
         float zDiff = lookupPtActualZ - originEye.z;
         
         if(abs(zDiff) > epsilon && zDiff < maxZdiff) {
-            float horizAngle = atan(zDiff, sampleDist/(cos(tangentAngle)));
-            maxHorizAngle = max(maxHorizAngle, horizAngle);
+          float horizAngle = atan(zDiff, sampleDist/(cos(tangentAngle)));
+          maxHorizAngle = max(maxHorizAngle, horizAngle);
         }
       }
       
-      //ambFactor = 1.0-((maxHorizAngle - tangentAngle)/(PI/2));
-      //ambFactor = (maxHorizAngle-tangentAngle)/PI;
+      //ambFactor = 1.0-(maxHorizAngle+PI/2)/PI;
+      //ambFactor = 1-(maxHorizAngle-tangentAngle)/(PI/2);
       ambFactor = 1-(sin(maxHorizAngle)-sin(tangentAngle));
       
       cumAmbientFactor += (1.0/float(nAngles))*(ambFactor);
