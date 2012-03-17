@@ -159,18 +159,20 @@ object Main {
     ViewMode.bindGBufs(finalShader)
     //ssaoFbo.tex.bindAndSetShader(3, finalShader, "ssaoBuf");
     blurYFbo.tex.bindAndSetShader(3, finalShader, "ssaoBuf");
+    
     camera.passInUniforms(finalShader)
     camera.putModelViewMatrixIntoTextureMat(0)
+    
+    camera.loadGLMatrices()
+    curLevel.setLights()
+    
     drawQuad(finalShader)
     
     // Render Screen
     screenFbo.bind()
     testShader.use()    
     ViewMode.bindForTestShader(testShader)
-    
-    camera.loadGLMatrices()
-    curLevel.setLights()
-    
+        
     drawQuad(testShader)
   }
   

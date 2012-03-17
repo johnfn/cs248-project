@@ -187,9 +187,9 @@ class Level(val name: String) extends VBOModelEntity {
     val buf = ByteBuffer
       .allocateDirect(16).order(ByteOrder.nativeOrder()).asFloatBuffer()
     
-    buf.put(Array(1.0f, 1.0f, 1.0f, 1.0f)).flip()
+    buf.put(Array(3.0f, 3.0f, 3.0f, 3.0f)).flip()
     glLight(lightId, GL_AMBIENT,  buf)
-    buf.put(Array(0.3f, 0.3f, 0.3f, 1.0f)).flip()
+    buf.put(Array(0.5f, 0.5f, 0.5f, 1.0f)).flip()
     glLight(lightId, GL_DIFFUSE,  buf)
     buf.put(Array(0.5f, 0.5f, 0.5f, 1.0f)).flip()
     glLight(lightId, GL_SPECULAR, buf)
