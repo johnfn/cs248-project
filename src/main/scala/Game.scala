@@ -20,20 +20,20 @@ object Main {
 
   val camera = new Camera()
   val manager = new EntityManager()
-  
+
   val gbufFbo = new MrtFloatFbo(3, width, height)
   val ssaoFbo = new SimpleFbo(width/2, height/2, GL_RGB, GL_RGB)
   val blurXFbo = new SimpleFbo(width/2, height/2, GL_RGB, GL_RGB)
   val blurYFbo = new SimpleFbo(width/2, height/2, GL_RGB, GL_RGB)
   val finalFbo = new SimpleFbo(width, height, GL_RGBA, GL_RGBA)
-  
+
   val gbufShader = new Shader("gbufs", "gbufs")
   val testShader = new Shader("minimal", "test")
   val ssaoShader = new Shader("minimal", "ssao")
   val blurXShader = new Shader("minimal", "blurX")
   val blurYShader = new Shader("minimal", "blurY")
   val finalShader = new Shader("minimal", "final")
-  
+
   var curLevel : Level = null
 
   def main(args:Array[String]) = {
@@ -63,12 +63,12 @@ object Main {
       println("OpenGL context doesn't support VBOs.")
       System.exit(-1)
     }
-    
+
     if(!GLContext.getCapabilities().GL_EXT_framebuffer_object) {
       println("OpenGL context doesn't support FBOs.")
       System.exit(-1)
     }
-    
+
     def loadShader(shader: Shader) = if(!shader.init()) {
       println("""Shader "%s/%s" initialization failed"""
         .format(shader.vertName, shader.fragName))
@@ -76,11 +76,11 @@ object Main {
     } else {
       shader.use()
     }
-       
+
     List(
       gbufShader, testShader, ssaoShader, blurXShader, blurYShader, finalShader)
       .foreach(loadShader)
-    
+
     gbufFbo.init()
     ssaoFbo.init()
     blurXFbo.init()
@@ -91,14 +91,11 @@ object Main {
     glEnable(GL_DEPTH_TEST)
     glEnable(GL_CULL_FACE)
     glCullFace(GL_BACK)
-    
-    Mouse.setGrabbed(true)
-
   }
 
   def addObjects() = {
     val ghost = new Ghost()
-    
+
     curLevel = new Level("level1")
 
     manager.add(camera)
@@ -126,56 +123,56 @@ object Main {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     camera.loadGLMatrices()
     camera.passInUniforms(gbufShader)
-    
+
     manager.renderAll(gbufShader)
-    
+
     // Render SSAO pass
     ssaoFbo.bind()
     ssaoShader.use()
-    
+
     camera.passInUniforms(ssaoShader)
     camera.putModelViewMatrixIntoTextureMat(0)
     ViewMode.bindGBufs(ssaoShader)
-    
+
     drawQuad(ssaoShader)
-    /**/
+    /* */
     // Render Blur X pass
     blurXFbo.bind()
     blurXShader.use()
     ssaoFbo.tex.bindAndSetShader(0, blurXShader, "texInp");
     ViewMode.bindTexelSizes(blurXShader)
     drawQuad(blurXShader)
-    
+
     // Render Blur Y pass
     blurYFbo.bind()
     blurYShader.use()
     blurXFbo.tex.bindAndSetShader(0, blurYShader, "texInp");
     ViewMode.bindTexelSizes(blurYShader)
     drawQuad(blurYShader)
-    
+
     // Render final shader
     finalFbo.bind()
     finalShader.use()
     ViewMode.bindGBufs(finalShader)
     //ssaoFbo.tex.bindAndSetShader(3, finalShader, "ssaoBuf");
     blurYFbo.tex.bindAndSetShader(3, finalShader, "ssaoBuf");
-    
+
     camera.passInUniforms(finalShader)
     camera.putModelViewMatrixIntoTextureMat(0)
-    
+
     camera.loadGLMatrices()
     curLevel.setLights()
-    
+
     drawQuad(finalShader)
-    
+
     // Render Screen
     screenFbo.bind()
-    testShader.use()    
+    testShader.use()
     ViewMode.bindForTestShader(testShader)
-        
+
     drawQuad(testShader)
   }
-  
+
   def drawQuad(shader: Shader) = {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     glMatrixMode(GL_PROJECTION)
@@ -183,9 +180,9 @@ object Main {
     glOrtho(0, 1, 0, 1, 1, -1)
     glMatrixMode(GL_MODELVIEW)
     glLoadIdentity()
-    
+
     val texCoordLoc = glGetAttribLocation(shader.id, "texcoordIn")
-      
+
     glBegin(GL_QUADS)
       glVertexAttrib2f(texCoordLoc, 0, 0)
       glVertex3f(0, 0, 0)
@@ -198,18 +195,47 @@ object Main {
     glEnd()
   }
 
+  /*
+
+  Initial stab at mouse picking (translating mouse coords to what the mouse is
+  actually over). May continue later.
+
+  def updateMouseCoords() = {
+    val x: Float = Mouse.getX()
+    val y: Float = Mouse.getY()
+
+    var viewport: Array[Int]
+    var modelview: Array[Float]
+    var projection: Array[Float]
+    var winX: Float, winY: Float, winZ: Float
+    var posX: Float, posY: Float, posZ: Float
+
+    glGetFloat(GL_MODELVIEW_MATRIX, modelview)
+    glGetFloat(GL_PROJECTION_MATRIX, projection)
+    glGetInteger(GL_VIEWPORT, viewport)
+
+    winX = x
+    winY = viewport(3) - y;
+    glReadPixels( x, int(winY), 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &winZ );
+
+    gluUnProject( winX, winY, winZ, modelview, projection, viewport, &posX, &posY, &posZ);
+  }
+  */
+
   def run() = {
     val fpsPrintInterval = 5000;
     var lastPrintTime = System.nanoTime()/1000000
-    var framesDrawnSinceLastPrint = 0 
-    
+    var framesDrawnSinceLastPrint = 0
+
     while(!(isKeyDown(KEY_ESCAPE) || Display.isCloseRequested)) {
+      //updateMouseCoords()
+
       updateGame()
       Display.update()
       renderGame()
       //Display.sync(FRAMERATE)
       framesDrawnSinceLastPrint += 1
-     
+
       val tNow = System.nanoTime()/1000000
       if(tNow > lastPrintTime+fpsPrintInterval) {
         println("FPS: %f"
@@ -223,7 +249,7 @@ object Main {
 
 object ViewMode {
   var lastKey = KEY_1
-  
+
   def associations : List[(Int, Texture, Boolean)] = {
     import Main._
     List(
@@ -237,36 +263,36 @@ object ViewMode {
       (KEY_8, blurYFbo.tex, false)
     )
   }
-  
+
   def update() = associations.foreach {
     case (key, _, _) => if(isKeyDown(key)) lastKey = key
   }
-  
-  def bindForTestShader(shader: Shader) = {    
+
+  def bindForTestShader(shader: Shader) = {
     val (_, tex, showW) = associations.find(_._1 == lastKey).get
-   
+
     tex.bindAndSetShader(0, shader, "texture")
     glUniform1i(glGetUniformLocation(shader.id, "showW"), if(showW) 1 else 0)
   }
-  
+
   def bindGBufs(shader: Shader) = {
-    Main.gbufFbo.colorTexAry.zipWithIndex.map { 
+    Main.gbufFbo.colorTexAry.zipWithIndex.map {
       case (tex, texUnit) => tex.bind(texUnit)
     }
-    
+
     List("nmlGbuf", "difGbuf", "spcGbuf").zipWithIndex.map {
-      case (name, texUnit) => 
+      case (name, texUnit) =>
         glUniform1i(glGetUniformLocation(shader.id, name), texUnit)
     }
-    
+
     //Main.gbufFbo.depthTex.bindAndSetShader(3, shader, "zBuf")
   }
-  
+
   def bindTexelSizes(shader: Shader) = {
     // since we are rendering at half-res
-    glUniform1f(glGetUniformLocation(shader.id, "texelX"), 
-      2.0f/(Main.width.toFloat))  
-    glUniform1f(glGetUniformLocation(shader.id, "texelY"), 
+    glUniform1f(glGetUniformLocation(shader.id, "texelX"),
+      2.0f/(Main.width.toFloat))
+    glUniform1f(glGetUniformLocation(shader.id, "texelY"),
       2.0f/(Main.height.toFloat))
   }
 }
