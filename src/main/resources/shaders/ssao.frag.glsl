@@ -19,7 +19,7 @@ void main()
 {
   float PI = 3.14159265358979323846264;
   int nAngles = 4;
-  float lookupStep = 0.15;
+  float lookupStep = 0.25;
   int nSamples = 3;
   float epsilon = 0.1;
   float maxZdiff = 2.0;
@@ -67,15 +67,16 @@ void main()
 
       for(float j=1.; j <= nSamples + 0.5; j++) {
         // sampleDist in view space
-        float sampleDist = j*lookupStep/pow(cos(tangentAngle), 2.5);
+        float sampleDistXY = j*lookupStep/pow(cos(tangentAngle), 1.0);
 
-        vec3 lookupPt = originEye + sampleDist*sampleDir;
+        vec3 lookupPt = 
+          originEye + sampleDistXY*normalize(vec3(sampleDir.xy, 0));
 
         vec4 lookupClipHomo = gl_TextureMatrix[0]*vec4(lookupPt, 1.0);
         vec3 lookupClip = lookupClipHomo.xyz/lookupClipHomo.w;
         vec2 lookupTexCoord = lookupClip.xy*0.5+0.5;
 
-        float lookupPtActualZ = 0;
+        float lookupPtActualZ = 0.;
 
         lookupPtActualZ = zSample( lookupTexCoord );
 
@@ -83,7 +84,7 @@ void main()
         float zDiff = lookupPtActualZ - originEye.z;
 
         if(abs(zDiff) > epsilon && zDiff < maxZdiff) {
-          float horizAngle = atan(zDiff, sampleDist/(cos(tangentAngle)));
+          float horizAngle = atan(zDiff, sampleDistXY);
           maxHorizAngle = max(maxHorizAngle, horizAngle);
         }
       }
