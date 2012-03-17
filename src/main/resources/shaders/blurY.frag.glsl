@@ -38,8 +38,8 @@ void main()
 
   // darken it a bit
   float zeroPt = .25;
-  finalVal = max(finalVal-zeroPt, 0)*(1./(1.-zeroPt));
-  
+  finalVal = max(finalVal-zeroPt, 0.)*(1./(1.-zeroPt));
+
   gl_FragColor = vec4(vec3(1,1,1)*finalVal, texcoord);
 }
 

@@ -20,7 +20,7 @@ void main()
   float PI = 3.14159265358979323846264;
   int nAngles = 4;
   float lookupStep = 0.15;
-  int nSamples = 3;
+  float nSamples = 3.;
   float epsilon = 0.1;
   float maxZdiff = 2.0;
 
@@ -75,7 +75,7 @@ void main()
         vec3 lookupClip = lookupClipHomo.xyz/lookupClipHomo.w;
         vec2 lookupTexCoord = lookupClip.xy*0.5+0.5;
 
-        float lookupPtActualZ = 0;
+        float lookupPtActualZ = 0.;
 
         lookupPtActualZ = zSample( lookupTexCoord );
 
@@ -90,7 +90,7 @@ void main()
 
       //ambFactor = 1.0-((maxHorizAngle - tangentAngle)/(PI/2));
       //ambFactor = (maxHorizAngle-tangentAngle)/PI;
-      ambFactor = 1-(sin(maxHorizAngle)-sin(tangentAngle));
+      ambFactor = 1.-(sin(maxHorizAngle)-sin(tangentAngle));
 
       cumAmbientFactor += (1.0/float(nAngles))*(ambFactor);
     }
