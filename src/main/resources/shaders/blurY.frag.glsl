@@ -38,8 +38,8 @@ void main()
   float finalVal = accumVal/accumWeights;
 
   // darken it a bit
-  float zeroPt = .4;
-  finalVal = max(finalVal-zeroPt, 0.)*(1./(1.-zeroPt));
+  //float zeroPt = .4;
+  //finalVal = max(finalVal-zeroPt, 0.)*(1./(1.-zeroPt));
 
   gl_FragColor = vec4(vec3(1,1,1)*finalVal, texcoord);
 }

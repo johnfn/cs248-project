@@ -68,11 +68,12 @@ class Camera extends Entity {
   override def update(m: EntityManager) {
     val dx = Mouse.getDX()
     val dy = Mouse.getDY()
+    val CAM_LAG:Float = 15f
 
     val pr:Protagonist = m.entities.filter(_.traits.contains("protagonist")).head.asInstanceOf[Protagonist]
-    centerX = pr.x
-    centerY = pr.y
-    centerZ = pr.z
+    centerX = centerX + (pr.x - centerX) / CAM_LAG
+    centerY = centerY + (pr.y - centerY) / CAM_LAG
+    centerZ = centerZ + (pr.z - centerZ) / CAM_LAG
 
     if(Mouse.isButtonDown(1)) {
       val yInvert = 3.0 // no invert
