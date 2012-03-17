@@ -25,38 +25,38 @@ class Camera extends Entity {
   var camPhi = (5.0/4.0*Pi).asInstanceOf[Float]
 
   def farClip = 60.0f
-  
+
   def loadGLMatrices() {
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
     multPerspectiveMatrix()
-    
+
     glMatrixMode(GL_MODELVIEW)
     glLoadIdentity()
     multModelViewMatrix()
   }
-  
+
   def putModelViewMatrixIntoTextureMat(texUnit: Int) = {
     glActiveTexture(GL_TEXTURE0+texUnit)
     glMatrixMode(GL_TEXTURE)
     glLoadIdentity()
-    
+
     multPerspectiveMatrix()
-    
+
     glMatrixMode(GL_MODELVIEW)
     glActiveTexture(GL_TEXTURE0)
   }
-  
+
   def multPerspectiveMatrix() {
     // 90 degrees vertical fov, 16:9 aspect ratio
     // clip at 0.1 and 500
     Project.gluPerspective(90, 16.0f/9.0f, 0.1f, farClip)
   }
-  
+
   def passInUniforms(shader: Shader) {
     glUniform1f(glGetUniformLocation(shader.id, "farClip"), farClip)
   }
-  
+
   def multModelViewMatrix() {
     val camX = (camR*cos(camPhi)*sin(camTheta) + centerX).asInstanceOf[Float]
     val camY = (camR*sin(camPhi)*sin(camTheta) + centerY).asInstanceOf[Float]
@@ -68,10 +68,12 @@ class Camera extends Entity {
   override def update(m: EntityManager) {
     val dx = Mouse.getDX()
     val dy = Mouse.getDY()
+    val CAM_LAG:Float = 15f
 
     val pr:Protagonist = m.entities.filter(_.traits.contains("protagonist")).head.asInstanceOf[Protagonist]
-    centerX = pr.x
-    centerY = pr.y
+    centerX = centerX + (pr.x - centerX) / CAM_LAG
+    centerY = centerY + (pr.y - centerY) / CAM_LAG
+    centerZ = centerZ + (pr.z - centerZ) / CAM_LAG
 
     if(Mouse.isButtonDown(1)) {
       val yInvert = 3.0 // no invert
@@ -83,7 +85,7 @@ class Camera extends Entity {
       // limit movement of camera
       camTheta = max(min(camTheta, (Pi-0.001f).asInstanceOf[Float]), 0.001f)
       camPhi   = (camPhi % (2*Pi)).asInstanceOf[Float]
-      
+
       //println("Camera (r,t,p) = (%f,%f,%f)".format(camR, camTheta, camPhi))
     }
   }

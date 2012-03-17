@@ -8,37 +8,36 @@ float gaus(float x, float sigSq) {
   return exp(-(x*x/(2.0*sigSq)));
 }
 
-void main() 
-{ 
+void main()
+{
   float accumWeights = 0.;
   float accumVal = 0.;
-  
   float sigmaSqPixDist = 6.0*6.0;
   float sigmaSqValDist = 0.2*0.2;
-  
+
   float myValue = texture2D(texInp, texcoord).x;
-  
-  for(int i=-2; i <= 2; i++) {
+
+  for(float i=-2.; i <= 2.; i++) {
     float texelOffset = float(i);
     float samplePtY = texcoord.y - texelOffset*texelY;
-    
+
     if(samplePtY > 0.0 && samplePtY < 1.0) {
       vec2 samplePt = vec2(texcoord.x, samplePtY);
       float sampleValue = texture2D(texInp, samplePt).x;
-      
+
       float valDist = sampleValue - myValue;
-      
+
       float weight = gaus(i, sigmaSqPixDist)*gaus(valDist,sigmaSqValDist);
-        
+
       accumWeights += weight;
       accumVal += weight*sampleValue;
     }
   }
-  
+
   float finalVal = accumVal/accumWeights;
-  
+
   // darken it a bit
-  float zeroPt = .3;
+  float zeroPt = .25;
   finalVal = max(finalVal-zeroPt, 0)*(1./(1.-zeroPt));
   
   gl_FragColor = vec4(vec3(1,1,1)*finalVal, texcoord);
