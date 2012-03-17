@@ -25,10 +25,7 @@ class Enemy(var x: Float, var y: Float) extends VBOModelEntity {
 	val rand = new Random()
 
 	def randDistance(min: Integer, max: Integer) = {
-		val dist = (min + rand.nextInt(max - min)) * (if (rand.nextBoolean()) -1 else 1)
-
-		println(dist)
-		dist
+		(min + rand.nextInt(max - min)) * (if (rand.nextBoolean()) -1 else 1)
 	}
 
 	def sign(x: Float) = {
@@ -63,8 +60,6 @@ class Enemy(var x: Float, var y: Float) extends VBOModelEntity {
 				// Walk that way
 				val newx = x + sign(destination._1 - x)
 				val newy = y + sign(destination._2 - y)
-
-				println(lv.inBounds(newx, newy))
 
 				if (lv.inBounds(newx, newy) && lv.height(newx, newy) - z <= .5){
 					x = newx
