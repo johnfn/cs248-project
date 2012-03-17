@@ -17,7 +17,6 @@ import com.threed.jpct.util._
 import math._
 
 class SquareModel(val x: Float, val y: Float, val z: Float) extends VBOModel {
-
 	val name = "cubemodel"
 
 	override def getVertices() = {
