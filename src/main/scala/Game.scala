@@ -103,6 +103,7 @@ object Main {
     manager.add(new Crystal(3.0f, 3.0f, 0.0f))
     manager.add(ghost)
     manager.add(new Protagonist(ghost))
+    manager.add(new Enemy(8, 8))
   }
 
   def gameOver() = {
