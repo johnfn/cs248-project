@@ -5,7 +5,7 @@ import java.nio.ByteBuffer
 case class Vertex(
   x: Float, y: Float, z: Float,
   nx: Float, ny: Float, nz: Float,
-  s: Float, t: Float)
+  var s: Float, var t: Float)
 {
   def insertIntoBuf(vBuf: ByteBuffer) = {
     vBuf
