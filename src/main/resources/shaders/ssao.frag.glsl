@@ -20,7 +20,7 @@ void main()
   float PI = 3.14159265358979323846264;
   int nAngles = 4;
   float lookupStep = 0.20;
-  int nSamples = 3;
+  float nSamples = 3.;
   float epsilon = 0.05;
   float maxZdiff = 2.0;
 
@@ -37,7 +37,7 @@ void main()
     float originYeye = ((-originNdcXY.y*z_e)-projMat[2][1]*z_e)/projMat[1][1];
 
     vec3 originEye = vec3(originXeye, originYeye, originZeye);
-    
+
     vec3 oW = originEye;
 
     // Generate random normalized tangent and bitangent.
@@ -71,7 +71,7 @@ void main()
         // sampleDist in view space
         float sampleDistXY = j*lookupStep/pow(cos(tangentAngle), 1.0);
 
-        vec3 lookupPt = 
+        vec3 lookupPt =
           originEye + sampleDistXY*normalize(vec3(sampleDir.xy, 0));
 
         vec4 lookupClipHomo = gl_TextureMatrix[0]*vec4(lookupPt, 1.0);
