@@ -64,7 +64,7 @@ class LevelModel(val name: String)
     // and x+ and y+ are right and down in the image
     // This is different from opengl's texture coordinate system
     val floorCorners = Array(
-      (-0.5f, -0.5f), (0.5f, -0.5f), (0.5f, 0.5f), (-0.5f, 0.5f))
+      (-SIZE, -SIZE), (SIZE, -SIZE), (SIZE, SIZE), (-SIZE, SIZE))
 
     var vertVec = new scala.collection.immutable.VectorBuilder[Vertex]()
 
@@ -89,7 +89,7 @@ class LevelModel(val name: String)
           0, 0, 1,
           // The "- dx/50.0f" and "- dy/50.0f" nudges the texture coordinates just
           // slightly inwards, so that little white dots don't appear.
-          floorS0+(dx+0.5f)*texSUnit - dx/50.0f, (2+dy+0.5f)*texTUnit - dy/50.0f)
+          floorS0+(dx+SIZE)*texSUnit - dx/(SIZE * 100), (2+dy+SIZE)*texTUnit - dy/(SIZE * 100))
       }
 
       // sub 'x' or 'y' for 'u'
@@ -116,10 +116,10 @@ class LevelModel(val name: String)
         {
           vertVec ++= floorCorners.map { case(dy, dz) =>
             Vertex(
-              xf+0.5f, yf+dy*nx, tileZTop+(dz-0.5f)*tileZHeight,
+              xf+SIZE, yf+dy*nx, tileZTop+(dz-SIZE)*tileZHeight,
               nx, 0, 0,
-              texS0+(dy+0.5f)*texSUnit,
-              (texT0Units+(1.0f-tileZHeight)+(dz+0.5f)*tileZHeight)*texTUnit)
+              texS0+(dy+SIZE)*texSUnit,
+              (texT0Units+(1.0f-tileZHeight)+(dz+SIZE)*tileZHeight)*texTUnit)
           }
         }
 
@@ -146,10 +146,10 @@ class LevelModel(val name: String)
         {
           vertVec ++= floorCorners.map { case(dx, dz) =>
             Vertex(
-              xf-dx*ny, yf+0.5f, tileZTop+(dz-0.5f)*tileZHeight,
+              xf-dx*ny, yf+SIZE, tileZTop+(dz-SIZE)*tileZHeight,
               0, ny, 0,
-              texS0+(dx+0.5f)*texSUnit,
-              (texT0Units+(1.0f-tileZHeight)+(dz+0.5f)*tileZHeight)*texTUnit)
+              texS0+(dx+SIZE)*texSUnit,
+              (texT0Units+(1.0f-tileZHeight)+(dz+SIZE)*tileZHeight)*texTUnit)
           }
         }
 
