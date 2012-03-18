@@ -2,7 +2,6 @@ package edu.stanford.cs248.project
 
 import org.lwjgl.opengl._
 import org.lwjgl.input.Keyboard._
-import org.lwjgl.input._
 import GL11._
 import GL20._
 

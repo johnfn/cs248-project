@@ -31,7 +31,7 @@ class Protagonist(val ghost: Ghost) extends VBOModelEntity {
   val JUMP_HEIGHT = .2f
   val GRAVITY = 0.02f
 
-  var gravGunObj: Option[Entity] = None
+  var gravGunObj: Option[Moveable] = None
   var x = 0.0f
   var y = 0.0f
   var z = 0.0f
@@ -115,15 +115,26 @@ class Protagonist(val ghost: Ghost) extends VBOModelEntity {
     if (Mouse.isButtonDown(0)) {
       gravGunObj match {
         case Some(ent) => {
-          /* move entity */
+          m.pickCoordinate().map((x, y) => ent.setPosition(m, x, y))
+
+          //TODO
+          //ent.setHighlighted(true)
         }
 
         case None => {
-          //gravGunObj = m.pickObject()
+          m.pickObject() map { ent =>
+            if (ent.traits.contains("moveable")) {
+              gravGunObj = Some(ent.asInstanceOf[Moveable])
+            }
+          }
         }
       }
     } else {
-      gravGunObj = None
+      gravGunObj map { ent =>
+        //TODO
+        //ent.setHighlighted(false)
+        gravGunObj = None
+      }
     }
   }
 

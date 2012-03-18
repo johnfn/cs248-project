@@ -16,7 +16,18 @@ import com.threed.jpct._
 import com.threed.jpct.util._
 import math._
 
-class Block(var x: Float, var y: Float, var z: Float) extends VBOModelEntity {
+/* Moveable by the gravity gun. */
+trait Moveable {
+	def setPosition(m: EntityManager, newx: Float, newy: Float) = {
+	    val lv:Level = m.entities.filter(_.traits.contains("level")).head.asInstanceOf[Level]
+
+		x = newx
+		y = newy
+		z = lv.height(x, y)
+	}
+}
+
+class Block(var x: Float, var y: Float, var z: Float) extends VBOModelEntity with Moveable {
 	val model = new SquareModel(x, y, z)
 	val width = 0.5f
 
@@ -29,20 +40,11 @@ class Block(var x: Float, var y: Float, var z: Float) extends VBOModelEntity {
 		}
 	}
 
-	def setPosition(m: EntityManager, newx: Float, newy: Float) = {
-	    val lv:Level = m.entities.filter(_.traits.contains("level")).head.asInstanceOf[Level]
-
-		x = newx
-		y = newy
-		z = lv.height(x, y)
-
-	}
-
 	def intersect(px: Float, py: Float, pz: Float) = {
 		(px > x - width) && (px < x + width) &&
 		(py > y - width) && (py < y + width) &&
 		(pz > 0.0f - width) && (pz < 0.0f + width) //TODO - actual z value
 	}
 
-	override def traits() = List("render", "update", "block")
+	override def traits() = List("render", "update", "moveable")
 }
