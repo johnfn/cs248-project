@@ -28,6 +28,7 @@ class Camera extends Entity {
   var camTheta = (60.0/180.0*Pi).asInstanceOf[Float]
   var camPhi = (5.0/4.0*Pi).asInstanceOf[Float]
 
+  def nearClip = 0.1f
   def farClip = 60.0f
 
   def loadGLMatrices() {
@@ -54,7 +55,7 @@ class Camera extends Entity {
   def multPerspectiveMatrix() {
     // 90 degrees vertical fov, 16:9 aspect ratio
     // clip at 0.1 and 60
-    Project.gluPerspective(90, 16.0f/9.0f, 0.1f, farClip)
+    Project.gluPerspective(90, 16.0f/9.0f, nearClip, farClip)
   }
 
   def passInUniforms(shader: Shader) {
@@ -75,7 +76,7 @@ class Camera extends Entity {
   def multModelViewMatrix() {
     updateCamPos()
 
-    Project.gluLookAt(camX, camY, camZ, centerX, centerY, centerZ, up.x, up.y, up.z)
+    Project.gluLookAt(eye.x, eye.y, eye.z, lookAt.x, lookAt.y, lookAt.z, up.x, up.y, up.z)
   }
 
   def up() = {

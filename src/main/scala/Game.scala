@@ -132,7 +132,6 @@ object Main {
         return
       }
     }
-    println("final pos: " + pos)
     b.select(false)
   }
 
@@ -292,11 +291,11 @@ object Main {
     //val viewRatio: Double = Math.tan(scala.Math.Pi / 4.0f / 2.00f)
 
     //get the mouse position in screenSpace coords
-    val screenSpaceX: Double = (mouseX / (WIDTH / 2)  - 1.0f) * aspectRatio * viewRatio
+    val screenSpaceX: Double = (mouseX / (WIDTH  / 2) - 1.0f) * aspectRatio * viewRatio
     val screenSpaceY: Double = (mouseY / (HEIGHT / 2) - 1.0f) * viewRatio
 
-    val NearPlane: Double = 0.1;
-    val FarPlane: Double = 60.0;
+    val NearPlane: Double = camera.nearClip
+    val FarPlane: Double = camera.farClip
 
     //Find the far and near camera spaces
     var cameraSpaceNear: Vector4f = new Vector4f( (screenSpaceX * NearPlane).asInstanceOf[Float],  (screenSpaceY * NearPlane).asInstanceOf[Float],  (-NearPlane).asInstanceOf[Float], 1);
