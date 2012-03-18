@@ -82,6 +82,21 @@ class Camera extends Entity {
     viewMatrix.m33 = buf.get(15)
   }
 
+  def loadIntoTextureMatrices() = {
+    glActiveTexture(GL_TEXTURE0)
+    glMatrixMode(GL_TEXTURE)
+    glLoadIdentity()
+    multPerspectiveMatrix()
+
+    glActiveTexture(GL_TEXTURE1)
+    glMatrixMode(GL_TEXTURE)
+    glLoadIdentity()
+    multModelViewMatrix()
+
+    glActiveTexture(GL_TEXTURE0)
+    glMatrixMode(GL_MODELVIEW)
+  }
+
 def putModelViewMatrixIntoTextureMat(texUnit: Int) = {
   glActiveTexture(GL_TEXTURE0+texUnit)
   glMatrixMode(GL_TEXTURE)
