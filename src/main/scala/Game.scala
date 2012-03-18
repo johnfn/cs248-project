@@ -116,18 +116,23 @@ object Main {
     var (pos, dir) = getPickRay()
     val b:Block = m.entities.filter(_.traits.contains("block")).head.asInstanceOf[Block]
 
-    println(pos)
+    dir.normalise()
+
+    println("pos: " + pos)
+    println("dir: " + dir)
 
     for (x <- 0 until 10000) {
-      pos.x += dir.x / 10.0f
-      pos.y += dir.y / 10.0f
-      pos.z += dir.z / 10.0f
+      pos.x += dir.x / 100.0f
+      pos.y += dir.y / 100.0f
+      pos.z += dir.z / 100.0f
 
       if (b.intersect(pos.x, pos.y, pos.z)) {
+        b.select(true)
         println("You're mousing over the block")
         return
       }
     }
+    b.select(false)
   }
 
   def updateGame() = {
@@ -240,11 +245,16 @@ object Main {
                                 , camera.lookAt().y - camera.eye().y
                                 , camera.lookAt().z - camera.eye().z)
 
+      println(camera.lookAt())
+      println(camera.eye())
+      println(forward)
+
       var up = camera.up()
       forward.normalise();
 
       /* Side = forward x up */
       Vector3f.cross(forward, up, side);
+      println(side)
       side.normalise();
 
       /* Recompute up as: up = side x forward */
@@ -272,19 +282,20 @@ object Main {
     import org.lwjgl.util._
     import org.lwjgl.util.vector._
     val mouseX: Float = Mouse.getX().asInstanceOf[Float]
-    val mouseY: Float = HEIGHT - Mouse.getY().asInstanceOf[Float]
+    val mouseY: Float = Mouse.getY().asInstanceOf[Float]
 
     val view: Matrix4f = generateViewMatrix()
 
     val aspectRatio: Double = WIDTH.asInstanceOf[Float] / HEIGHT.asInstanceOf[Float]
-    val viewRatio: Double = Math.tan(scala.Math.Pi / 4.0f / 2.00f)
+    val viewRatio: Double = Math.tan(Math.toRadians(90.0) / 2.0) //90 degrees
+    //val viewRatio: Double = Math.tan(scala.Math.Pi / 4.0f / 2.00f)
 
     //get the mouse position in screenSpace coords
-    val screenSpaceX: Double = (mouseX / (WIDTH / 2) - 1.0f) * aspectRatio * viewRatio
-    val screenSpaceY: Double = (1.0f - mouseY / (HEIGHT / 2)) * viewRatio
+    val screenSpaceX: Double = (mouseX / (WIDTH / 2)  - 1.0f) * aspectRatio * viewRatio
+    val screenSpaceY: Double = (mouseY / (HEIGHT / 2) - 1.0f) * viewRatio
 
     val NearPlane: Double = 0.0;
-    val FarPlane: Double = 1000.0;
+    val FarPlane: Double = 1.0;
 
     //Find the far and near camera spaces
     var cameraSpaceNear: Vector4f = new Vector4f( (screenSpaceX * NearPlane).asInstanceOf[Float],  (screenSpaceY * NearPlane).asInstanceOf[Float],  (-NearPlane).asInstanceOf[Float], 1);
@@ -308,6 +319,8 @@ object Main {
     val rayDirection: Vector3f = new Vector3f(worldSpaceFar.x - worldSpaceNear.x, worldSpaceFar.y - worldSpaceNear.y, worldSpaceFar.z - worldSpaceNear.z);
 
     rayDirection.normalise();
+
+    rayPosition.z = -rayPosition.z;
 
     (rayPosition, rayDirection);
   }

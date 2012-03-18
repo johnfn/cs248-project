@@ -62,21 +62,26 @@ class Camera extends Entity {
   }
 
   def updateCamPos() {
+    camX = centerX
+    camY = centerY
+    camZ = 10.0f
+    /*
     camX = (camR*cos(camPhi)*sin(camTheta) + centerX).asInstanceOf[Float]
     camY = (camR*sin(camPhi)*sin(camTheta) + centerY).asInstanceOf[Float]
     camZ = (camR*cos(camTheta) + centerZ).asInstanceOf[Float]
+    */
   }
 
   def multModelViewMatrix() {
     updateCamPos()
 
-    Project.gluLookAt(camX, camY, camZ, centerX, centerY, centerZ, 0, 0, 1)
+    Project.gluLookAt(camX, camY, camZ, centerX, centerY, centerZ, up.x, up.y, up.z)
   }
 
   def up() = {
     import org.lwjgl.util.vector._
 
-    new Vector3f(0, 0, 1)
+    new Vector3f(0, 1, 0)
   }
 
   def eye() = {
