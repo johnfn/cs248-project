@@ -15,17 +15,17 @@ import edu.stanford.cs248.project.opengl._
 object Main {
   val GAME_TITLE = "My Game"
   val FRAMERATE = 60
-  val width = 1280
-  val height = 720
+  val WIDTH = 1280
+  val HEIGHT = 720
 
   val camera = new Camera()
   val manager = new EntityManager()
 
-  val gbufFbo = new MrtFloatFbo(3, width, height)
-  val ssaoFbo = new SimpleFbo(width/2, height/2, GL_RGB, GL_RGB)
-  val blurXFbo = new SimpleFbo(width/2, height/2, GL_RGB, GL_RGB)
-  val blurYFbo = new SimpleFbo(width/2, height/2, GL_RGB, GL_RGB)
-  val finalFbo = new SimpleFbo(width, height, GL_RGBA, GL_RGBA)
+  val gbufFbo = new MrtFloatFbo(3, WIDTH, HEIGHT)
+  val ssaoFbo = new SimpleFbo(WIDTH/2, HEIGHT/2, GL_RGB, GL_RGB)
+  val blurXFbo = new SimpleFbo(WIDTH/2, HEIGHT/2, GL_RGB, GL_RGB)
+  val blurYFbo = new SimpleFbo(WIDTH/2, HEIGHT/2, GL_RGB, GL_RGB)
+  val finalFbo = new SimpleFbo(WIDTH, HEIGHT, GL_RGBA, GL_RGBA)
 
   val gbufShader = new Shader("gbufs", "gbufs")
   val testShader = new Shader("minimal", "test")
@@ -55,7 +55,7 @@ object Main {
     Display.setTitle(GAME_TITLE)
     Display.setFullscreen(fullscreen)
     //Display.setVSyncEnabled(true)
-    Display.setDisplayMode(new DisplayMode(width,height))
+    Display.setDisplayMode(new DisplayMode(WIDTH,HEIGHT))
     Display.create()
 
     GLContext.useContext()
@@ -87,7 +87,7 @@ object Main {
     blurYFbo.init()
     finalFbo.init()
 
-    glViewport(0, 0, width, height)
+    glViewport(0, 0, WIDTH, HEIGHT)
     glEnable(GL_DEPTH_TEST)
     glEnable(GL_CULL_FACE)
     glCullFace(GL_BACK)
@@ -103,7 +103,7 @@ object Main {
     manager.add(new Crystal(3.0f, 3.0f, 0.0f))
     manager.add(ghost)
     manager.add(new Protagonist(ghost))
-    manager.add(new Enemy(8, 8))
+    manager.add(new Block(8, 8, 0))
   }
 
   def gameOver() = {
@@ -196,32 +196,100 @@ object Main {
     glEnd()
   }
 
-  /*
+  def getActualEyePosition() = {
+    import org.lwjgl.util._
+    import org.lwjgl.util.vector._
 
-  Initial stab at mouse picking (translating mouse coords to what the mouse is
-  actually over). May continue later.
-
-  def updateMouseCoords() = {
-    val x: Float = Mouse.getX()
-    val y: Float = Mouse.getY()
-
-    var viewport: Array[Int]
-    var modelview: Array[Float]
-    var projection: Array[Float]
-    var winX: Float, winY: Float, winZ: Float
-    var posX: Float, posY: Float, posZ: Float
-
-    glGetFloat(GL_MODELVIEW_MATRIX, modelview)
-    glGetFloat(GL_PROJECTION_MATRIX, projection)
-    glGetInteger(GL_VIEWPORT, viewport)
-
-    winX = x
-    winY = viewport(3) - y;
-    glReadPixels( x, int(winY), 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &winZ );
-
-    gluUnProject( winX, winY, winZ, modelview, projection, viewport, &posX, &posY, &posZ);
+    var rotatedEye : Vector4f = camera.eye()
+    rotatedEye.x -= camera.lookAt().x * 2;
+    rotatedEye.y -= camera.lookAt().y * 2;
+    rotatedEye.z -= camera.lookAt().z * 2;
+    //rotatedEye = rotatedEye.rotate(getRotation()); //TODO......
+    new Vector3f(-rotatedEye.x, -rotatedEye.y, rotatedEye.z);
   }
-  */
+
+  def generateViewMatrix() = {
+    import org.lwjgl.util._
+    import org.lwjgl.util.vector._
+      var viewMatrix: Matrix4f = new Matrix4f()
+      var actualEye: Vector3f = getActualEyePosition()
+      var side: Vector3f = new Vector3f()
+      var forward = new Vector3f( camera.lookAt().x - camera.eye().x
+                                , camera.lookAt().y - camera.eye().y
+                                , camera.lookAt().z - camera.eye().z)
+
+      var up = camera.up()
+      forward.normalise();
+
+      /* Side = forward x up */
+      Vector3f.cross(forward, up, side);
+      side.normalise();
+
+      /* Recompute up as: up = side x forward */
+      Vector3f.cross(side, forward, up);
+
+      viewMatrix.m00 = side.x;
+      viewMatrix.m10 = side.y;
+      viewMatrix.m20 = side.z;
+      viewMatrix.m30 = -(Vector3f.dot(side, actualEye));
+
+      viewMatrix.m01 = up.x;
+      viewMatrix.m11 = up.y;
+      viewMatrix.m21 = up.z;
+      viewMatrix.m31 = -(Vector3f.dot(up, actualEye));
+
+      viewMatrix.m02 = -forward.x;
+      viewMatrix.m12 = -forward.y;
+      viewMatrix.m22 = -forward.z;
+      viewMatrix.m32 = -(Vector3f.dot(forward, actualEye));
+
+      viewMatrix
+  }
+
+  def getPickRay() = {
+    import org.lwjgl.util._
+    import org.lwjgl.util.vector._
+    val mouseX: Float = Mouse.getX().asInstanceOf[Float]
+    val mouseY: Float = HEIGHT - Mouse.getY().asInstanceOf[Float]
+
+    val view: Matrix4f = generateViewMatrix()
+
+    val aspectRatio: Double = WIDTH.asInstanceOf[Float] / HEIGHT.asInstanceOf[Float]
+    val viewRatio: Double = Math.tan(scala.Math.Pi / 4.0f / 2.00f)
+
+    //get the mouse position in screenSpace coords
+    val screenSpaceX: Double = (mouseX / (WIDTH / 2) - 1.0f) * aspectRatio * viewRatio
+    val screenSpaceY: Double = (1.0f - mouseY / (HEIGHT / 2)) * viewRatio
+
+    val NearPlane: Double = 0.0;
+    val FarPlane: Double = 1000.0;
+
+    //Find the far and near camera spaces
+    var cameraSpaceNear: Vector4f = new Vector4f( (screenSpaceX * NearPlane).asInstanceOf[Float],  (screenSpaceY * NearPlane).asInstanceOf[Float],  (-NearPlane).asInstanceOf[Float], 1);
+    var cameraSpaceFar: Vector4f = new Vector4f( (screenSpaceX * FarPlane).asInstanceOf[Float],  (screenSpaceY * FarPlane).asInstanceOf[Float],  (-FarPlane).asInstanceOf[Float], 1);
+
+
+    //Unproject the 2D window into 3D to see where in 3D we're actually clicking
+
+    //TODO: If this ends up being right, go correct incorrect SO answer.
+    var tmpView: Matrix4f = new Matrix4f(view);
+    var invView: Matrix4f = tmpView.invert().asInstanceOf[Matrix4f]
+    var worldSpaceNear: Vector4f = new Vector4f();
+    Matrix4f.transform(invView, cameraSpaceNear, worldSpaceNear);
+
+    var worldSpaceFar: Vector4f = new Vector4f();
+
+    Matrix4f.transform(invView, cameraSpaceFar, worldSpaceFar);
+
+    //calculate the ray position and direction
+    val rayPosition: Vector3f = new Vector3f(worldSpaceNear.x, worldSpaceNear.y, worldSpaceNear.z);
+    val rayDirection: Vector3f = new Vector3f(worldSpaceFar.x - worldSpaceNear.x, worldSpaceFar.y - worldSpaceNear.y, worldSpaceFar.z - worldSpaceNear.z);
+
+    rayDirection.normalise();
+
+    (rayPosition, rayDirection);
+  }
+
 
   def run() = {
     val fpsPrintInterval = 5000;
@@ -230,6 +298,11 @@ object Main {
 
     while(!(isKeyDown(KEY_ESCAPE) || Display.isCloseRequested)) {
       //updateMouseCoords()
+
+      var (pos, dir) = getPickRay()
+      println("====")
+      println(pos)
+      println(dir)
 
       updateGame()
       Display.update()
@@ -292,8 +365,8 @@ object ViewMode {
   def bindTexelSizes(shader: Shader) = {
     // since we are rendering at half-res
     glUniform1f(glGetUniformLocation(shader.id, "texelX"),
-      2.0f/(Main.width.toFloat))
+      2.0f/(Main.WIDTH.toFloat))
     glUniform1f(glGetUniformLocation(shader.id, "texelY"),
-      2.0f/(Main.height.toFloat))
+      2.0f/(Main.HEIGHT.toFloat))
   }
 }

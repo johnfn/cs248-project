@@ -19,6 +19,10 @@ class Camera extends Entity {
   var centerY = 0.0f
   var centerZ = 0.0f
 
+  var camX = 0.0f
+  var camY = 0.0f
+  var camZ = 0.0f
+
   // Spherical coordinates with center as the origin
   var camR = 5f
   var camTheta = (60.0/180.0*Pi).asInstanceOf[Float]
@@ -57,12 +61,36 @@ class Camera extends Entity {
     glUniform1f(glGetUniformLocation(shader.id, "farClip"), farClip)
   }
 
+  def updateCamPos() {
+    camX = (camR*cos(camPhi)*sin(camTheta) + centerX).asInstanceOf[Float]
+    camY = (camR*sin(camPhi)*sin(camTheta) + centerY).asInstanceOf[Float]
+    camZ = (camR*cos(camTheta) + centerZ).asInstanceOf[Float]
+  }
+
   def multModelViewMatrix() {
-    val camX = (camR*cos(camPhi)*sin(camTheta) + centerX).asInstanceOf[Float]
-    val camY = (camR*sin(camPhi)*sin(camTheta) + centerY).asInstanceOf[Float]
-    val camZ = (camR*cos(camTheta) + centerZ).asInstanceOf[Float]
+    updateCamPos()
 
     Project.gluLookAt(camX, camY, camZ, centerX, centerY, centerZ, 0, 0, 1)
+  }
+
+  def up() = {
+    import org.lwjgl.util.vector._
+
+    new Vector3f(0, 0, 1)
+  }
+
+  def eye() = {
+    import org.lwjgl.util.vector._
+
+    updateCamPos()
+
+    new Vector4f(camX, camY, camZ, 1)
+  }
+
+  def lookAt() = {
+    import org.lwjgl.util.vector._
+
+    new Vector3f(centerX, centerY, centerZ)
   }
 
   override def update(m: EntityManager) {
