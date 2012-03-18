@@ -111,8 +111,30 @@ object Main {
     System.exit(0)
   }
 
+  // Tries to find an object that the user is mousing over.
+  def pickAnObject(m: EntityManager) {
+    var (pos, dir) = getPickRay()
+    val b:Block = m.entities.filter(_.traits.contains("block")).head.asInstanceOf[Block]
+
+    println(pos)
+
+    for (x <- 0 until 10000) {
+      pos.x += dir.x / 10.0f
+      pos.y += dir.y / 10.0f
+      pos.z += dir.z / 10.0f
+
+      if (b.intersect(pos.x, pos.y, pos.z)) {
+        println("You're mousing over the block")
+        return
+      }
+    }
+  }
+
   def updateGame() = {
     ViewMode.update()
+
+    pickAnObject(manager)
+
     manager.updateAll()
   }
 
@@ -298,12 +320,6 @@ object Main {
 
     while(!(isKeyDown(KEY_ESCAPE) || Display.isCloseRequested)) {
       //updateMouseCoords()
-
-      var (pos, dir) = getPickRay()
-      println("====")
-      println(pos)
-      println(dir)
-
       updateGame()
       Display.update()
       renderGame()
