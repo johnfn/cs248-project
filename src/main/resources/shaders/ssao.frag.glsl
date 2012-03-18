@@ -91,7 +91,7 @@ void main()
         }
       }
 
-      ambFactor = 1.0-((maxHorizAngle - tangentAngle)/(PI/2));
+      ambFactor = 1.0-((maxHorizAngle - tangentAngle)/(PI/2.));
       //ambFactor = (maxHorizAngle-tangentAngle)/PI;
       //ambFactor = 1.-(sin(maxHorizAngle)-sin(tangentAngle));
 
