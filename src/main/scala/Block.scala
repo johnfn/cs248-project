@@ -17,7 +17,7 @@ import com.threed.jpct.util._
 import math._
 
 /* Moveable by the gravity gun. */
-trait Moveable {
+trait Moveable extends Entity {
 	def setPosition(m: EntityManager, newx: Float, newy: Float) = {
 	    val lv:Level = m.entities.filter(_.traits.contains("level")).head.asInstanceOf[Level]
 
@@ -27,7 +27,11 @@ trait Moveable {
 	}
 }
 
-class Block(var x: Float, var y: Float, var z: Float) extends VBOModelEntity with Moveable {
+class Block(block_x: Float, block_y: Float, block_z: Float) extends VBOModelEntity with Moveable {
+	x = block_x
+	y = block_y
+	z = block_z
+
 	val model = new SquareModel(x, y, z)
 	val width = 0.5f
 

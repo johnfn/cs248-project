@@ -17,7 +17,6 @@ import org.lwjgl.util._
 import org.lwjgl.util.vector._
 
 class Camera extends Entity {
-
   var viewMatrix: Matrix4f = new Matrix4f()
 
   var centerX = 0.0f

@@ -114,8 +114,6 @@ object Main {
   def updateGame() = {
     ViewMode.update()
 
-    println(manager.pickCoordinate())
-
     manager.updateAll()
   }
 

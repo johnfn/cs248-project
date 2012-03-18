@@ -64,7 +64,11 @@ class CrystalModel()
 	def getIndices() = (0 until nVerts)
 }
 
-class Crystal(val x: Float, val y: Float, val z: Float) extends VBOModelEntity {
+class Crystal(crystal_x: Float, crystal_y: Float, crystal_z: Float) extends VBOModelEntity {
+	x = crystal_x
+	y = crystal_y
+	z = crystal_z
+
 	val model = new CrystalModel()
 
 	override def traits() = List("render", "update", "crystal")

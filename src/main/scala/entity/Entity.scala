@@ -9,6 +9,7 @@ trait Entity {
   def update(m: EntityManager) = {}
 
   var initGLDone = false
+  var (x, y, z) = (0.0f, 0.0f, 0.0f)
 
   def checkInit() = if(!initGLDone) {
     doInitGL()
@@ -113,7 +114,7 @@ class EntityManager {
   }
 
   // Get the coordinate that the mouse is hovering over or None.
-  def pickCoordinate() = {
+  def pickCoordinate(): Option[Tuple2[Int, Int]] = {
     pick(true).asInstanceOf[Option[Tuple2[Int, Int]]]
   }
 

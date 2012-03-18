@@ -17,8 +17,10 @@ import com.threed.jpct._
 import com.threed.jpct.util._
 import math._
 
-class Enemy(var x: Float, var y: Float) extends VBOModelEntity {
-	var z : Float = 0.0f
+class Enemy(enemy_x: Float, enemy_y: Float) extends VBOModelEntity {
+	x = enemy_x
+	y = enemy_y
+	z = 0.0f
 	var model = new SquareModel(x, y, z)
 	var ticks = 0
 	var destination = (x, y)

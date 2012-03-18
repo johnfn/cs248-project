@@ -177,9 +177,9 @@ class Level(val name: String) extends VBOModelEntity {
   val model = new LevelModel(name)
 
   // origin of the model in WORLD SPACE
-  var x = 0f
-  var y = 0f
-  var z = 0f
+  x = 0f
+  y = 0f
+  z = 0f
 
   def height(x: Double, y: Double) = model.height(x, y)
   def inBounds(x: Double, y: Double) = model.inBounds(x, y)

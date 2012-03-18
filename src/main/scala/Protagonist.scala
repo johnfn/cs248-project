@@ -15,9 +15,9 @@ import Keyboard._
 import scala.math._
 
 class Ghost() extends VBOModelEntity {
-  var x = 1.0f
-  var y = 0.0f
-  var z = 0.0f
+  x = 1.0f
+  y = 0.0f
+  z = 0.0f
   val model = new SquareModel(x, y, z)//, List(100, 0, 0))
 
   def setPosition(newx: Float, newy: Float, newz: Float) = {
@@ -32,9 +32,9 @@ class Protagonist(val ghost: Ghost) extends VBOModelEntity {
   val GRAVITY = 0.02f
 
   var gravGunObj: Option[Moveable] = None
-  var x = 0.0f
-  var y = 0.0f
-  var z = 0.0f
+  x = 0.0f
+  y = 0.0f
+  z = 0.0f
   val model = new SquareModel(x, y, z)//, List(250, 0, 0))
 
   var vz = 0.0f
@@ -115,14 +115,14 @@ class Protagonist(val ghost: Ghost) extends VBOModelEntity {
     if (Mouse.isButtonDown(0)) {
       gravGunObj match {
         case Some(ent) => {
-          m.pickCoordinate().map((x, y) => ent.setPosition(m, x, y))
+          m.pickCoordinate().map { case(x, y) => ent.setPosition(m, x, y) }
 
           //TODO
           //ent.setHighlighted(true)
         }
 
         case None => {
-          m.pickObject() map { ent =>
+          m.pickEntity().map { ent =>
             if (ent.traits.contains("moveable")) {
               gravGunObj = Some(ent.asInstanceOf[Moveable])
             }
