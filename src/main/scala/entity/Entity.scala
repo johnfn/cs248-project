@@ -83,7 +83,7 @@ class EntityManager {
   // If coord is false, return the entity the mouse is over or None.
   private def pick(coord: Boolean): Option[Any] = {
     var (pos, dir) = getPickRay()
-    val b:Block = entities.filter(_.traits.contains("block")).head.asInstanceOf[Block]
+    val b:Block = entities.filter(_.traits.contains("moveable")).head.asInstanceOf[Block]
     val lv:Level = entities.filter(_.traits.contains("level")).head.asInstanceOf[Level]
 
     // TODO (?) This method for checking ray/box collisions is pretty darn
