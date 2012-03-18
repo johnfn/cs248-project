@@ -80,7 +80,7 @@ class EntityManager {
 
   // If coord is true, return the map coordinates the mouse is over or None.
   // If coord is false, return the entity the mouse is over or None.
-  def pick(coord: Boolean): Option[Any] = {
+  private def pick(coord: Boolean): Option[Any] = {
     var (pos, dir) = getPickRay()
     val b:Block = entities.filter(_.traits.contains("block")).head.asInstanceOf[Block]
     val lv:Level = entities.filter(_.traits.contains("level")).head.asInstanceOf[Level]
