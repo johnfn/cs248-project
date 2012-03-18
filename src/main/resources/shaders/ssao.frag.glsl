@@ -19,9 +19,9 @@ void main()
 {
   float PI = 3.14159265358979323846264;
   int nAngles = 4;
-  float lookupStep = 0.25;
+  float lookupStep = 0.20;
   int nSamples = 3;
-  float epsilon = 0.1;
+  float epsilon = 0.05;
   float maxZdiff = 2.0;
 
   mat4 projMat = gl_TextureMatrix[0];
@@ -37,12 +37,14 @@ void main()
     float originYeye = ((-originNdcXY.y*z_e)-projMat[2][1]*z_e)/projMat[1][1];
 
     vec3 originEye = vec3(originXeye, originYeye, originZeye);
+    
+    vec3 oW = originEye;
 
     // Generate random normalized tangent and bitangent.
     // This allows us to trade low frequency noise for high frequency noise,
     // which we can blur
     vec3 rVec = vec3(
-      rand(texcoord), rand(texcoord+vec2(1,1)), rand(texcoord+vec2(2,2))
+      rand(oW.xy), rand(oW.yz), rand(oW.zx)
       )*2.0-1.0;
     vec3 normal = texture2D(nmlGbuf, texcoord).xyz;
 

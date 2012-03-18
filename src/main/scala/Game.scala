@@ -132,7 +132,7 @@ object Main {
     ssaoShader.use()
 
     camera.passInUniforms(ssaoShader)
-    camera.putModelViewMatrixIntoTextureMat(0)
+    camera.loadIntoTextureMatrices()
     ViewMode.bindGBufs(ssaoShader)
 
     drawQuad(ssaoShader)
@@ -159,7 +159,7 @@ object Main {
     blurYFbo.tex.bindAndSetShader(3, finalShader, "ssaoBuf");
 
     camera.passInUniforms(finalShader)
-    camera.putModelViewMatrixIntoTextureMat(0)
+    camera.loadIntoTextureMatrices()
 
     camera.loadGLMatrices()
     curLevel.setLights()
