@@ -132,6 +132,7 @@ object Main {
         return
       }
     }
+    println("final pos: " + pos)
     b.select(false)
   }
 
@@ -294,8 +295,8 @@ object Main {
     val screenSpaceX: Double = (mouseX / (WIDTH / 2)  - 1.0f) * aspectRatio * viewRatio
     val screenSpaceY: Double = (mouseY / (HEIGHT / 2) - 1.0f) * viewRatio
 
-    val NearPlane: Double = 0.0;
-    val FarPlane: Double = 1.0;
+    val NearPlane: Double = 0.1;
+    val FarPlane: Double = 60.0;
 
     //Find the far and near camera spaces
     var cameraSpaceNear: Vector4f = new Vector4f( (screenSpaceX * NearPlane).asInstanceOf[Float],  (screenSpaceY * NearPlane).asInstanceOf[Float],  (-NearPlane).asInstanceOf[Float], 1);

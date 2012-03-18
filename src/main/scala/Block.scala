@@ -32,7 +32,7 @@ class Block(val x: Float, val y: Float, var z: Float) extends VBOModelEntity {
 	def intersect(px: Float, py: Float, pz: Float) = {
 		(px > x - width) && (px < x + width) &&
 		(py > y - width) && (py < y + width) &&
-		(pz > z - width) && (pz < z + width)
+		(pz > 0.0f - width) && (pz < 0.0f + width) //TODO - actual z value
 	}
 
 	override def traits() = List("render", "update", "block")

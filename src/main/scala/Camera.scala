@@ -53,7 +53,7 @@ class Camera extends Entity {
 
   def multPerspectiveMatrix() {
     // 90 degrees vertical fov, 16:9 aspect ratio
-    // clip at 0.1 and 500
+    // clip at 0.1 and 60
     Project.gluPerspective(90, 16.0f/9.0f, 0.1f, farClip)
   }
 
@@ -106,7 +106,7 @@ class Camera extends Entity {
     val pr:Protagonist = m.entities.filter(_.traits.contains("protagonist")).head.asInstanceOf[Protagonist]
     centerX = centerX + (pr.x - centerX) / CAM_LAG
     centerY = centerY + (pr.y - centerY) / CAM_LAG
-    centerZ = centerZ + (pr.z - centerZ) / CAM_LAG
+    centerZ = 0.0f //centerZ + (pr.z - centerZ) / CAM_LAG
 
     if(Mouse.isButtonDown(1)) {
       val yInvert = 3.0 // no invert
