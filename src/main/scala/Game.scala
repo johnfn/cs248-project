@@ -112,45 +112,10 @@ object Main {
   }
 
   // Tries to find an object that the user is mousing over.
-  def pickAnObject(m: EntityManager) {
-    var (pos, dir) = getPickRay()
-    val b:Block = m.entities.filter(_.traits.contains("block")).head.asInstanceOf[Block]
-    val lv:Level = m.entities.filter(_.traits.contains("level")).head.asInstanceOf[Level]
-
-    // TODO (?) This method for checking ray/box collisions is pretty darn
-    // slow. If we are finding that the program is going really slowly, this
-    // could be a candidate for easy improvement (just drop a better collision
-    // test in here).
-
-    // Step along the ray from the mouse position into the screen, stopping as
-    // soon as we find a collision with any in-game object.
-    for (x <- 0 until 1000) {
-      pos.x += dir.x / 10.0f
-      pos.y += dir.y / 10.0f
-      pos.z += dir.z / 10.0f
-
-      if (x < 0) return
-
-      lv.intersect(pos.x, pos.y, pos.z) match {
-        case Some((x, y)) => {
-          println ("ray intersects map at " + x + ", " + y)
-          b.setPosition(m, x, y)
-          return
-        }
-
-        case None => {
-          /* do nothing */
-        }
-      }
-    }
-
-    b.select(false)
-  }
-
   def updateGame() = {
     ViewMode.update()
 
-    pickAnObject(manager)
+    println(manager.pickCoordinate())
 
     manager.updateAll()
   }
@@ -235,68 +200,12 @@ object Main {
     glEnd()
   }
 
-  def getActualEyePosition() = {
-    import org.lwjgl.util._
-    import org.lwjgl.util.vector._
-
-    var rotatedEye : Vector4f = camera.eye()
-    rotatedEye.x -= camera.lookAt().x * 2;
-    rotatedEye.y -= camera.lookAt().y * 2;
-    rotatedEye.z -= camera.lookAt().z * 2;
-    //rotatedEye = rotatedEye.rotate(getRotation()); //TODO......
-    new Vector3f(-rotatedEye.x, -rotatedEye.y, rotatedEye.z);
-  }
-
-  def getPickRay() = {
-    import org.lwjgl.util._
-    import org.lwjgl.util.vector._
-    val mouseX: Float = Mouse.getX().asInstanceOf[Float]
-    val mouseY: Float = Mouse.getY().asInstanceOf[Float]
-
-    val view: Matrix4f = camera.viewMatrix
-
-    val aspectRatio: Double = WIDTH.asInstanceOf[Float] / HEIGHT.asInstanceOf[Float]
-    val viewRatio: Double = Math.tan(Math.toRadians(90.0) / 2.0) //90 degrees
-
-    //get the mouse position in screenSpace coords
-    val screenSpaceX: Double = (mouseX / (WIDTH  / 2) - 1.0f) * aspectRatio * viewRatio
-    val screenSpaceY: Double = (mouseY / (HEIGHT / 2) - 1.0f) * viewRatio
-
-    val NearPlane: Double = camera.nearClip
-    val FarPlane: Double = camera.farClip
-
-    //Find the far and near camera spaces
-    var cameraSpaceNear: Vector4f = new Vector4f( (screenSpaceX * NearPlane).asInstanceOf[Float],  (screenSpaceY * NearPlane).asInstanceOf[Float],  (-NearPlane).asInstanceOf[Float], 1);
-    var cameraSpaceFar: Vector4f = new Vector4f( (screenSpaceX * FarPlane).asInstanceOf[Float],  (screenSpaceY * FarPlane).asInstanceOf[Float],  (-FarPlane).asInstanceOf[Float], 1);
-
-    //Unproject the 2D window into 3D to see where in 3D we're actually clicking
-
-    //TODO: If this ends up being right, go correct incorrect SO answer.
-    var invView: Matrix4f = (new Matrix4f(view)).invert().asInstanceOf[Matrix4f]
-    var worldSpaceNear: Vector4f = new Vector4f();
-    Matrix4f.transform(invView, cameraSpaceNear, worldSpaceNear);
-
-    var worldSpaceFar: Vector4f = new Vector4f();
-
-    Matrix4f.transform(invView, cameraSpaceFar, worldSpaceFar);
-
-    //calculate the ray position and direction
-    val rayPosition: Vector3f = new Vector3f(worldSpaceNear.x, worldSpaceNear.y, worldSpaceNear.z);
-    val rayDirection: Vector3f = new Vector3f(worldSpaceFar.x - worldSpaceNear.x, worldSpaceFar.y - worldSpaceNear.y, worldSpaceFar.z - worldSpaceNear.z);
-
-    rayDirection.normalise()
-
-    (rayPosition, rayDirection)
-  }
-
-
   def run() = {
     val fpsPrintInterval = 5000;
     var lastPrintTime = System.nanoTime()/1000000
     var framesDrawnSinceLastPrint = 0
 
     while(!(isKeyDown(KEY_ESCAPE) || Display.isCloseRequested)) {
-      //updateMouseCoords()
       updateGame()
       Display.update()
       renderGame()

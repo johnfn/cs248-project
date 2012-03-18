@@ -97,16 +97,16 @@ class Camera extends Entity {
     glMatrixMode(GL_MODELVIEW)
   }
 
-def putModelViewMatrixIntoTextureMat(texUnit: Int) = {
-  glActiveTexture(GL_TEXTURE0+texUnit)
-  glMatrixMode(GL_TEXTURE)
-  glLoadIdentity()
+  def putModelViewMatrixIntoTextureMat(texUnit: Int) = {
+    glActiveTexture(GL_TEXTURE0+texUnit)
+    glMatrixMode(GL_TEXTURE)
+    glLoadIdentity()
 
-  multPerspectiveMatrix()
+    multPerspectiveMatrix()
 
-  glMatrixMode(GL_MODELVIEW)
-  glActiveTexture(GL_TEXTURE0)
-}
+    glMatrixMode(GL_MODELVIEW)
+    glActiveTexture(GL_TEXTURE0)
+  }
 
   def multPerspectiveMatrix() {
     // 90 degrees vertical fov, 16:9 aspect ratio
@@ -149,6 +149,8 @@ def putModelViewMatrixIntoTextureMat(texUnit: Int) = {
 
     new Vector3f(centerX, centerY, centerZ)
   }
+
+  override def traits() = List("camera", "update")
 
   override def update(m: EntityManager) {
     val dx = Mouse.getDX()

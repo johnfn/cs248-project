@@ -31,6 +31,7 @@ class Protagonist(val ghost: Ghost) extends VBOModelEntity {
   val JUMP_HEIGHT = .2f
   val GRAVITY = 0.02f
 
+  var gravGunObj: Option[Entity] = None
   var x = 0.0f
   var y = 0.0f
   var z = 0.0f
@@ -105,6 +106,27 @@ class Protagonist(val ghost: Ghost) extends VBOModelEntity {
     }
   }
 
+  // This function will keep track of the gravity gun - namely, if it's being
+  // used, and what object it's moving.
+
+  // Let's call it the "Mass Transport Device" or something as to not
+  // instantly give away how we're ripping off HL2...
+  def updateGravGun(m: EntityManager) = {
+    if (Mouse.isButtonDown(0)) {
+      gravGunObj match {
+        case Some(ent) => {
+          /* move entity */
+        }
+
+        case None => {
+          //gravGunObj = m.pickObject()
+        }
+      }
+    } else {
+      gravGunObj = None
+    }
+  }
+
   override def update(m:EntityManager) = {
     // This is a common enough idiom that it may be worth abstracting out.
     val lv:Level = m.entities.filter(_.traits.contains("level")).head.asInstanceOf[Level]
@@ -115,5 +137,7 @@ class Protagonist(val ghost: Ghost) extends VBOModelEntity {
       moveGhost(m, lv)
       teleport(m, lv)
     }
+
+    updateGravGun(m)
   }
 }
