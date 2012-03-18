@@ -27,12 +27,76 @@ trait Moveable extends Entity {
 	}
 }
 
+class CubeModel(val x: Float, val y: Float, val z: Float) extends VBOModel {
+	val name = "cubemodel"
+
+	override def getVertices() = {
+		var vertices = List(
+		    // Front face
+	    	List(
+			    List(-1.0f, -1.0f,  1.0f),
+			    List( 1.0f, -1.0f,  1.0f),
+			    List( 1.0f,  1.0f,  1.0f),
+			    List(-1.0f,  1.0f,  1.0f)
+	    	),
+
+		    // Back face
+		    List(
+			    List(-1.0f, -1.0f, -1.0f),
+			    List(-1.0f,  1.0f, -1.0f),
+			    List( 1.0f,  1.0f, -1.0f),
+			    List( 1.0f, -1.0f, -1.0f)
+		    ),
+
+		    // Top face
+		    List(
+			    List(-1.0f,  1.0f, -1.0f),
+			    List(-1.0f,  1.0f,  1.0f),
+			    List( 1.0f,  1.0f,  1.0f),
+			    List( 1.0f,  1.0f, -1.0f)
+		    ),
+
+		    // Bottom face
+		    List(
+			    List(-1.0f, -1.0f, -1.0f),
+			    List( 1.0f, -1.0f, -1.0f),
+			    List( 1.0f, -1.0f,  1.0f),
+			    List(-1.0f, -1.0f,  1.0f)
+		    ),
+
+		    // Right face
+		    List(
+			    List( 1.0f, -1.0f, -1.0f),
+			    List( 1.0f,  1.0f, -1.0f),
+			    List( 1.0f,  1.0f,  1.0f),
+			    List( 1.0f, -1.0f,  1.0f)
+		    ),
+
+		    // Left face
+		    List(
+			    List(-1.0f, -1.0f, -1.0f),
+			    List(-1.0f, -1.0f,  1.0f),
+			    List(-1.0f,  1.0f,  1.0f),
+			    List(-1.0f,  1.0f, -1.0f)
+		    )
+		  );
+
+		vertices.map(face =>
+			face.map(vertex =>
+				Vertex(vertex(0) / 2.0f, vertex(1) / 2.0f, vertex(2) / 2.0f + 0.5f,
+					   0, 0, 1,
+					   0, 0))).flatten(identity)
+	}
+
+	override def getIndices() = 0 until 24
+}
+
 class Block(block_x: Float, block_y: Float, block_z: Float) extends VBOModelEntity with Moveable {
 	x = block_x
 	y = block_y
 	z = block_z
 
-	val model = new SquareModel(x, y, z)
+	val model = new CubeModel(x, y, z)
 	val width = 0.5f
 
 	// TODO: Could emit particles.
@@ -47,7 +111,7 @@ class Block(block_x: Float, block_y: Float, block_z: Float) extends VBOModelEnti
 	def intersect(px: Float, py: Float, pz: Float) = {
 		(px > x - width) && (px < x + width) &&
 		(py > y - width) && (py < y + width) &&
-		(pz > 0.0f - width) && (pz < 0.0f + width) //TODO - actual z value
+		(pz > z) && (pz < z + 2.0f * width) //TODO - actual z value
 	}
 
 	override def traits() = List("render", "update", "moveable")
