@@ -115,21 +115,34 @@ object Main {
   def pickAnObject(m: EntityManager) {
     var (pos, dir) = getPickRay()
     val b:Block = m.entities.filter(_.traits.contains("block")).head.asInstanceOf[Block]
+    val lv:Level = m.entities.filter(_.traits.contains("level")).head.asInstanceOf[Level]
 
-    dir.normalise()
+    // TODO (?) This method for checking ray/box collisions is pretty darn
+    // slow. If we are finding that the program is going really slowly, this
+    // could be a candidate for easy improvement (just drop a better collision
+    // test in here).
 
-    for (x <- 0 until 10000) {
-      pos.x += dir.x / 100.0f
-      pos.y += dir.y / 100.0f
-      pos.z += dir.z / 100.0f
+    // Step along the ray from the mouse position into the screen, stopping as
+    // soon as we find a collision with any in-game object.
+    for (x <- 0 until 1000) {
+      pos.x += dir.x / 10.0f
+      pos.y += dir.y / 10.0f
+      pos.z += dir.z / 10.0f
 
-      if (b.intersect(pos.x, pos.y, pos.z)) {
-        b.select(true)
-        println("You're mousing over the block")
-        return
+      if (x < 0) return
+
+      lv.intersect(pos.x, pos.y, pos.z) match {
+        case Some((x, y)) => {
+          println ("ray intersects map at " + x + ", " + y)
+          b.setPosition(m, x, y)
+          return
+        }
+
+        case None => {
+          /* do nothing */
+        }
       }
     }
-
 
     b.select(false)
   }
@@ -256,7 +269,6 @@ object Main {
     var cameraSpaceNear: Vector4f = new Vector4f( (screenSpaceX * NearPlane).asInstanceOf[Float],  (screenSpaceY * NearPlane).asInstanceOf[Float],  (-NearPlane).asInstanceOf[Float], 1);
     var cameraSpaceFar: Vector4f = new Vector4f( (screenSpaceX * FarPlane).asInstanceOf[Float],  (screenSpaceY * FarPlane).asInstanceOf[Float],  (-FarPlane).asInstanceOf[Float], 1);
 
-
     //Unproject the 2D window into 3D to see where in 3D we're actually clicking
 
     //TODO: If this ends up being right, go correct incorrect SO answer.
@@ -272,11 +284,9 @@ object Main {
     val rayPosition: Vector3f = new Vector3f(worldSpaceNear.x, worldSpaceNear.y, worldSpaceNear.z);
     val rayDirection: Vector3f = new Vector3f(worldSpaceFar.x - worldSpaceNear.x, worldSpaceFar.y - worldSpaceNear.y, worldSpaceFar.z - worldSpaceNear.z);
 
-    rayDirection.normalise();
+    rayDirection.normalise()
 
-    //rayPosition.z = -rayPosition.z;
-
-    (rayPosition, rayDirection);
+    (rayPosition, rayDirection)
   }
 
 

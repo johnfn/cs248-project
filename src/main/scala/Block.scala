@@ -16,7 +16,7 @@ import com.threed.jpct._
 import com.threed.jpct.util._
 import math._
 
-class Block(val x: Float, val y: Float, var z: Float) extends VBOModelEntity {
+class Block(var x: Float, var y: Float, var z: Float) extends VBOModelEntity {
 	val model = new SquareModel(x, y, z)
 	val width = 0.5f
 
@@ -27,6 +27,15 @@ class Block(val x: Float, val y: Float, var z: Float) extends VBOModelEntity {
 		} else {
 			z = 0.0f
 		}
+	}
+
+	def setPosition(m: EntityManager, newx: Float, newy: Float) = {
+	    val lv:Level = m.entities.filter(_.traits.contains("level")).head.asInstanceOf[Level]
+
+		x = newx
+		y = newy
+		z = lv.height(x, y)
+
 	}
 
 	def intersect(px: Float, py: Float, pz: Float) = {

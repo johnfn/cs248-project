@@ -24,6 +24,7 @@ class LevelModel(val name: String)
   val ySize = heightMap.ySize
 
   val zScale = 0.03f
+  val SIZE = 0.5f
 
   var indexCount = 0
 
@@ -41,13 +42,21 @@ class LevelModel(val name: String)
   )
 
   def inBounds(x: Double, y: Double) =
-    x > -0.5 && y > -0.5 && x < xSize-0.5 && y < ySize-0.5
+    x > -SIZE && y > -SIZE && x < xSize - SIZE && y < ySize - SIZE
 
   def height(x: Double, y: Double) = {
-    val clampedX = round(max(min(xSize-0.5, x), -0.5))
-    val clampedY = round(max(min(ySize-0.5, y), -0.5))
+    val clampedX = round(max(min(xSize-SIZE, x), -SIZE))
+    val clampedY = round(max(min(ySize-SIZE, y), -SIZE))
     heightMap.valueAt(clampedX.toInt, clampedY.toInt)*zScale
   }
+
+  /*
+  def toCoordinates(x: Float, y: Float) = {
+    import math._
+
+    (floor(x + 0.5f), floor(y + 0.5f))
+  }
+  */
 
   def getVertices() = {
     // insert one vertex per pixel in the heightmap
@@ -176,6 +185,19 @@ class Level(val name: String) extends VBOModelEntity {
   def inBounds(x: Double, y: Double) = model.inBounds(x, y)
   def zScale = model.zScale
 
+  def intersect(x: Float, y: Float, z: Float): Option[Tuple2[Int, Int]] = {
+    for (loc_x <- 0 until model.xSize; loc_y <- 0 until model.ySize) {
+      val loc_z = model.height(loc_x, loc_y)
+
+      if (x > loc_x - model.SIZE && x < loc_x + model.SIZE &&
+          y > loc_y - model.SIZE && y < loc_y + model.SIZE &&
+          z < loc_z && z > loc_z - 2 * model.SIZE) {
+        return Some((loc_x, loc_y))
+      }
+    }
+
+    None
+  }
   override def traits() = List("level", "render", "update")
 
   def setLights() = {
