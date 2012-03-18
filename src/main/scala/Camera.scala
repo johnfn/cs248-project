@@ -13,7 +13,12 @@ import scala.math._
 import edu.stanford.cs248.project.entity._
 import edu.stanford.cs248.project.opengl._
 
+import org.lwjgl.util._
+import org.lwjgl.util.vector._
+
 class Camera extends Entity {
+
+  var viewMatrix: Matrix4f = new Matrix4f()
 
   var centerX = 0.0f
   var centerY = 0.0f
@@ -39,18 +44,54 @@ class Camera extends Entity {
     glMatrixMode(GL_MODELVIEW)
     glLoadIdentity()
     multModelViewMatrix()
+
+    storeViewMat()
   }
 
-  def putModelViewMatrixIntoTextureMat(texUnit: Int) = {
-    glActiveTexture(GL_TEXTURE0+texUnit)
-    glMatrixMode(GL_TEXTURE)
-    glLoadIdentity()
+  def storeViewMat() = {
+    import java.nio._
+    import org.lwjgl._
 
-    multPerspectiveMatrix()
+    viewMatrix = new Matrix4f()
+    var buf: FloatBuffer = BufferUtils.createFloatBuffer(16 * 4);
 
-    glMatrixMode(GL_MODELVIEW)
-    glActiveTexture(GL_TEXTURE0)
+    // Get your current model view matrix from OpenGL.
+    glGetFloat(GL_MODELVIEW_MATRIX, buf);
+
+    // rewind the buffer
+    buf.rewind();
+
+    viewMatrix.m00 = buf.get(0)
+    viewMatrix.m01 = buf.get(1)
+    viewMatrix.m02 = buf.get(2)
+    viewMatrix.m03 = buf.get(3)
+
+    viewMatrix.m10 = buf.get(4)
+    viewMatrix.m11 = buf.get(5)
+    viewMatrix.m12 = buf.get(6)
+    viewMatrix.m13 = buf.get(7)
+
+    viewMatrix.m20 = buf.get(8)
+    viewMatrix.m21 = buf.get(9)
+    viewMatrix.m22 = buf.get(10)
+    viewMatrix.m23 = buf.get(11)
+
+    viewMatrix.m30 = buf.get(12)
+    viewMatrix.m31 = buf.get(13)
+    viewMatrix.m32 = buf.get(14)
+    viewMatrix.m33 = buf.get(15)
   }
+
+def putModelViewMatrixIntoTextureMat(texUnit: Int) = {
+  glActiveTexture(GL_TEXTURE0+texUnit)
+  glMatrixMode(GL_TEXTURE)
+  glLoadIdentity()
+
+  multPerspectiveMatrix()
+
+  glMatrixMode(GL_MODELVIEW)
+  glActiveTexture(GL_TEXTURE0)
+}
 
   def multPerspectiveMatrix() {
     // 90 degrees vertical fov, 16:9 aspect ratio
@@ -63,14 +104,9 @@ class Camera extends Entity {
   }
 
   def updateCamPos() {
-    camX = centerX
-    camY = centerY
-    camZ = 10.0f
-    /*
     camX = (camR*cos(camPhi)*sin(camTheta) + centerX).asInstanceOf[Float]
     camY = (camR*sin(camPhi)*sin(camTheta) + centerY).asInstanceOf[Float]
     camZ = (camR*cos(camTheta) + centerZ).asInstanceOf[Float]
-    */
   }
 
   def multModelViewMatrix() {
@@ -82,7 +118,7 @@ class Camera extends Entity {
   def up() = {
     import org.lwjgl.util.vector._
 
-    new Vector3f(0, 1, 0)
+    new Vector3f(0, 0, 1)
   }
 
   def eye() = {

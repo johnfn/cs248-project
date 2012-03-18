@@ -118,9 +118,6 @@ object Main {
 
     dir.normalise()
 
-    println("pos: " + pos)
-    println("dir: " + dir)
-
     for (x <- 0 until 10000) {
       pos.x += dir.x / 100.0f
       pos.y += dir.y / 100.0f
@@ -132,6 +129,8 @@ object Main {
         return
       }
     }
+
+
     b.select(false)
   }
 
@@ -235,60 +234,16 @@ object Main {
     new Vector3f(-rotatedEye.x, -rotatedEye.y, rotatedEye.z);
   }
 
-  def generateViewMatrix() = {
-    import org.lwjgl.util._
-    import org.lwjgl.util.vector._
-      var viewMatrix: Matrix4f = new Matrix4f()
-      var actualEye: Vector3f = getActualEyePosition()
-      var side: Vector3f = new Vector3f()
-      var forward = new Vector3f( camera.lookAt().x - camera.eye().x
-                                , camera.lookAt().y - camera.eye().y
-                                , camera.lookAt().z - camera.eye().z)
-
-      println(camera.lookAt())
-      println(camera.eye())
-      println(forward)
-
-      var up = camera.up()
-      forward.normalise();
-
-      /* Side = forward x up */
-      Vector3f.cross(forward, up, side);
-      println(side)
-      side.normalise();
-
-      /* Recompute up as: up = side x forward */
-      Vector3f.cross(side, forward, up);
-
-      viewMatrix.m00 = side.x;
-      viewMatrix.m10 = side.y;
-      viewMatrix.m20 = side.z;
-      viewMatrix.m30 = -(Vector3f.dot(side, actualEye));
-
-      viewMatrix.m01 = up.x;
-      viewMatrix.m11 = up.y;
-      viewMatrix.m21 = up.z;
-      viewMatrix.m31 = -(Vector3f.dot(up, actualEye));
-
-      viewMatrix.m02 = -forward.x;
-      viewMatrix.m12 = -forward.y;
-      viewMatrix.m22 = -forward.z;
-      viewMatrix.m32 = -(Vector3f.dot(forward, actualEye));
-
-      viewMatrix
-  }
-
   def getPickRay() = {
     import org.lwjgl.util._
     import org.lwjgl.util.vector._
     val mouseX: Float = Mouse.getX().asInstanceOf[Float]
     val mouseY: Float = Mouse.getY().asInstanceOf[Float]
 
-    val view: Matrix4f = generateViewMatrix()
+    val view: Matrix4f = camera.viewMatrix
 
     val aspectRatio: Double = WIDTH.asInstanceOf[Float] / HEIGHT.asInstanceOf[Float]
     val viewRatio: Double = Math.tan(Math.toRadians(90.0) / 2.0) //90 degrees
-    //val viewRatio: Double = Math.tan(scala.Math.Pi / 4.0f / 2.00f)
 
     //get the mouse position in screenSpace coords
     val screenSpaceX: Double = (mouseX / (WIDTH  / 2) - 1.0f) * aspectRatio * viewRatio
@@ -305,8 +260,7 @@ object Main {
     //Unproject the 2D window into 3D to see where in 3D we're actually clicking
 
     //TODO: If this ends up being right, go correct incorrect SO answer.
-    var tmpView: Matrix4f = new Matrix4f(view);
-    var invView: Matrix4f = tmpView.invert().asInstanceOf[Matrix4f]
+    var invView: Matrix4f = (new Matrix4f(view)).invert().asInstanceOf[Matrix4f]
     var worldSpaceNear: Vector4f = new Vector4f();
     Matrix4f.transform(invView, cameraSpaceNear, worldSpaceNear);
 
@@ -320,7 +274,7 @@ object Main {
 
     rayDirection.normalise();
 
-    rayPosition.z = -rayPosition.z;
+    //rayPosition.z = -rayPosition.z;
 
     (rayPosition, rayDirection);
   }
