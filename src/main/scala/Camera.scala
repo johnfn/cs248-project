@@ -158,7 +158,7 @@ def putModelViewMatrixIntoTextureMat(texUnit: Int) = {
     val pr:Protagonist = m.entities.filter(_.traits.contains("protagonist")).head.asInstanceOf[Protagonist]
     centerX = centerX + (pr.x - centerX) / CAM_LAG
     centerY = centerY + (pr.y - centerY) / CAM_LAG
-    centerZ = 0.0f //centerZ + (pr.z - centerZ) / CAM_LAG
+    centerZ = centerZ + (pr.z - centerZ) / CAM_LAG
 
     if(Mouse.isButtonDown(1)) {
       val yInvert = 3.0 // no invert
