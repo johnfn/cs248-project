@@ -48,6 +48,7 @@ object Main {
 
   val camera = new Camera()
   val manager = new EntityManager()
+  var skybox: SkyBox = null
 
   val gbufFbo = new MrtFloatFbo(3, WIDTH, HEIGHT)
   val ssaoFbo = new SimpleFbo(WIDTH/2, HEIGHT/2, GL_RGB, GL_RGB)
@@ -136,6 +137,8 @@ object Main {
     manager.add(new Block(9, 9, 0))
     manager.add(new Block(9, 8, 0))
     manager.add(new Enemy(6, 6))
+
+    skybox = new SkyBox()
   }
 
   def gameOver() = {
@@ -159,6 +162,7 @@ object Main {
     camera.loadGLMatrices()
     camera.passInUniforms(gbufShader)
 
+    skybox.renderGL(gbufShader)
     manager.renderAll(gbufShader)
 
     // Render SSAO pass
