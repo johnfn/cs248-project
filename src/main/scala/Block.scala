@@ -18,12 +18,21 @@ import math._
 
 /* Moveable by the gravity gun. */
 trait Moveable extends Entity {
+	var selected = false
+
 	def setPosition(m: EntityManager, newx: Float, newy: Float) = {
 	    val lv:Level = m.entities.filter(_.traits.contains("level")).head.asInstanceOf[Level]
 
-		x = newx
-		y = newy
-		z = m.height(x, y, this) + 1.0f
+	    if (x != newx || y != newy) {
+			x = newx
+			y = newy
+			z = m.height(x, y, this) + 1.0f
+		}
+	}
+
+	// TODO: Could emit particles.
+	def select(just_selected: Boolean) = {
+		selected = just_selected
 	}
 }
 
@@ -100,12 +109,25 @@ class Block(block_x: Float, block_y: Float, block_z: Float) extends VBOModelEnti
 
 	val model = new CubeModel(x, y, z)
 
-	// TODO: Could emit particles.
-	def select(selected: Boolean) = {
-		if (selected) {
-			z = 2.0f
-		} else {
-			z = 0.0f
+	override def update(m: EntityManager) = {
+		if (!selected) {
+			// Fall onto the block directly below this one.
+		    val lv:Level = m.entities.filter(_.traits.contains("level")).head.asInstanceOf[Level]
+			var lowest = lv.height(x, y)
+			m.entities.filter(e => e.x == x && e.y == y && e.z < z && e != this).map { e =>
+				if (e.z > lowest) {
+					lowest = e.z
+				}
+			}
+
+			lowest += WIDTH * 2
+
+			if (z >= lowest) {
+				z -= 0.02f;
+				if (z < lowest) {
+					z = lowest
+				}
+			}
 		}
 	}
 

@@ -131,7 +131,6 @@ class Protagonist(val ghost: Ghost) extends VBOModelEntity {
       gravGunObj match {
         case Some(ent) => {
           m.pickCoordinate().map { case(x, y) => ent.setPosition(m, x, y) }
-
           //TODO
           //ent.setHighlighted(true)
         }
@@ -139,15 +138,16 @@ class Protagonist(val ghost: Ghost) extends VBOModelEntity {
         case None => {
           m.pickEntity().map { ent =>
             if (ent.traits.contains("moveable")) {
-              gravGunObj = Some(ent.asInstanceOf[Moveable])
+              val e = ent.asInstanceOf[Moveable]
+              gravGunObj = Some(e)
+              e.select(true)
             }
           }
         }
       }
     } else {
       gravGunObj map { ent =>
-        //TODO
-        //ent.setHighlighted(false)
+        ent.asInstanceOf[Moveable].select(false)
         gravGunObj = None
       }
     }
