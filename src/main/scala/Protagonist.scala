@@ -95,7 +95,7 @@ class Protagonist(val ghost: Ghost) extends VBOModelEntity {
   }
 
   def teleport(m: EntityManager, lv: Level) = {
-    if (isKeyDown(KEY_Z)) {
+    if (ExtendedKeyboard.released(KEY_X)) {
       val zAtGhost = lv.height(ghost.x, ghost.y)
       // Don't teleport onto something higher than you are && ensure we're on the map still.
       if (zAtGhost <= ghost.z && lv.inBounds(ghost.x, ghost.y)) {
@@ -146,8 +146,9 @@ class Protagonist(val ghost: Ghost) extends VBOModelEntity {
     if (ticks % 5 == 0) {
       move(m, lv)
       moveGhost(m, lv)
-      teleport(m, lv)
     }
+
+    teleport(m, lv)
 
     updateGravGun(m)
   }

@@ -11,6 +11,36 @@ import scala.util.control.Breaks._
 import edu.stanford.cs248.project.entity._
 import edu.stanford.cs248.project.opengl._
 
+// This is needed because the current keyboard object doesn't keep
+// track of key releases, which is all we really care about...
+object ExtendedKeyboard {
+  var keys:Array[Boolean] = new Array(255)
+  var keysReleased:Array[Boolean] = new Array(255)
+
+  def update() = {
+    import org.lwjgl.input._
+
+    for (key <- 0 until 255) {
+      if (Keyboard.isKeyDown(key)) {
+        keys(key) = true
+        println(key)
+      } else {
+        keysReleased(key) = false
+
+        if (keys(key)) {
+          keysReleased(key) = true
+        }
+
+        keys(key) = false
+      }
+    }
+  }
+
+  def released(key: Int) = {
+    keysReleased(key)
+  }
+}
+
 object Main {
   val GAME_TITLE = "My Game"
   val FRAMERATE = 60
@@ -103,6 +133,7 @@ object Main {
     manager.add(ghost)
     manager.add(new Protagonist(ghost))
     manager.add(new Block(8, 8, 0))
+    manager.add(new Enemy(6, 6))
   }
 
   def gameOver() = {
@@ -204,6 +235,7 @@ object Main {
 
     while(!(isKeyDown(KEY_ESCAPE) || Display.isCloseRequested)) {
       updateGame()
+      ExtendedKeyboard.update()
       Display.update()
       renderGame()
       //Display.sync(FRAMERATE)
