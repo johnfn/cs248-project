@@ -33,7 +33,7 @@ class Camera extends Entity {
   var camPhi = (5.0/4.0*Pi).asInstanceOf[Float]
 
   def nearClip = 0.1f
-  def farClip = 60.0f
+  def farClip = 1600.0f
 
   def loadGLMatrices() {
     glMatrixMode(GL_PROJECTION)

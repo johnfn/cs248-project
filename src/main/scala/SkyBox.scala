@@ -17,129 +17,75 @@ import com.threed.jpct.util._
 import math._
 
 class SkyModel(val x: Float, val y: Float, val z: Float)
-	extends TexturedVBOModel(new ImageTexture("/textures/skybox.jpg"),
+	extends TexturedVBOModel(new ImageTexture("/textures/skybox2.gif"),
 		 					 new ColorTexture(0, 0, 0)) {
 	val name = "skybox"
-	val WIDTH = 10.0f
+	val WIDTH = 800.0f
+
+	def offset(lists: List[List[Int]], offx: Float, offy: Float) = {
+		lists.map { case List(x, y) => List(x.toFloat * 0.25f + offx, y.toFloat * 0.33f + offy)}
+	}
 
 	override def getVertices() = {
-		var texcoords = List(
 
-	//front
-		List(
-	        List(0, 0),
-	        List(1, 0),
-	        List(1, 1),
-	        List(0, 1)
-	        ).map {case List(x, y) => List(x.toFloat / 4.0f + 0.5f, y.toFloat / 3.0f + 1.0f / 3.0f)} ,
+val texcoords = List(
+	// front
+        offset(List(List(0, 0), List(1, 0), List(1, 1), List(0, 1)), 0.5f, 0.33f),
 
-	    // Render the back quad
-	    List(
-	        List(0, 0),
-	        List(1, 0),
-	        List(1, 1),
-	        List(0, 1)
-	        ).map {case List(x, y) => List(x.toFloat / 4.0f, y.toFloat / 3.0f)} ,
+    // Render the left quad
+        offset(List(List(0, 0), List(1, 0), List(1, 1), List(0, 1)), 0.25f, 0.33f),
 
-	    // Render the top quad
-	    List(
-	        List(0, 1),
-	        List(0, 0),
-	        List(1, 0),
-	        List(1, 1)
-	        ).map {case List(x, y) => List(x.toFloat / 4.0f + 0.5f, y.toFloat / 3.0f)} ,
+    // Render the back quad
+        offset(List(List(0, 0), List(1, 0), List(1, 1), List(0, 1)), 0.00f, 0.33f),
 
-	    // Render the bottom quad
-	    List(
-	        List(0, 0),
-	        List(0, 1),
-	        List(1, 1),
-	        List(1, 0)
-	        ).map {case List(x, y) => List(x.toFloat / 4.0f + 0.5f, y.toFloat / 3.0f + 2.0f / 3.0f)} ,
+    // Render the right quad
+        offset(List(List(0, 0), List(1, 0), List(1, 1), List(0, 1)), 0.75f, 0.33f),
 
-	    // Render the left quad
-	    List(
-	        List(0, 0),
-	        List(1, 0),
-	        List(1, 1),
-	        List(0, 1)
-	        ).map {case List(x, y) => List(x.toFloat / 4.0f + 0.25f, y.toFloat / 3.0f + 1.0f / 3.0f)} ,
+    // Render the top quad
+        offset(List(List(0, 1), List(0, 0), List(1, 0), List(1, 1)), 0.5f, 0.66f),
 
-	    // Render the right quad
-	    List(
-	        List(0, 0),
-	        List(1, 0),
-	        List(1, 1),
-	        List(0, 1)
-	        ).map {case List(x, y) => List(x.toFloat / 4.0f + 0.75f, y.toFloat / 3.0f + 1.0f / 3.0f)}
-		)
+    // Render the bottom quad
+        offset(List(List(0, 0), List(0, 1), List(1, 1), List(1, 0)), 0.5f, 0.0f)
+    ).flatten(identity)
 
-		var normals = List(
-			List( 0.0f, 0.0f,  1.0f),
-			List( 0.0f, 0.0f, -1.0f),
-			List( 0.0f,-1.0f,  0.0f),
-			List( 0.0f, 1.0f,  0.0f),
-			List( 1.0f, 0.0f,  0.0f),
-			List(-1.0f, 0.0f,  0.0f)
-			)
+val vertices = List(
+	List(  0.5f, -0.5f, -0.5f ),
+	List( -0.5f, -0.5f, -0.5f ),
+	List( -0.5f,  0.5f, -0.5f ),
+	List(  0.5f,  0.5f, -0.5f ),
 
-		var vertices = List(
-		    // Front face
-	    	List(
-			    List(-1.0f, -1.0f,  1.0f),
-			    List( 1.0f, -1.0f,  1.0f),
-			    List( 1.0f,  1.0f,  1.0f),
-			    List(-1.0f,  1.0f,  1.0f)
-	    	),
+	List(  0.5f, -0.5f,  0.5f ),
+	List(  0.5f, -0.5f, -0.5f ),
+	List(  0.5f,  0.5f, -0.5f ),
+	List(  0.5f,  0.5f,  0.5f ),
 
-		    // Back face
-		    List(
-			    List(-1.0f, -1.0f, -1.0f),
-			    List(-1.0f,  1.0f, -1.0f),
-			    List( 1.0f,  1.0f, -1.0f),
-			    List( 1.0f, -1.0f, -1.0f)
-		    ),
+	List( -0.5f, -0.5f,  0.5f ),
+	List(  0.5f, -0.5f,  0.5f ),
+	List(  0.5f,  0.5f,  0.5f ),
+	List( -0.5f,  0.5f,  0.5f ),
 
-		    // Top face
-		    List(
-			    List(-1.0f,  1.0f, -1.0f),
-			    List(-1.0f,  1.0f,  1.0f),
-			    List( 1.0f,  1.0f,  1.0f),
-			    List( 1.0f,  1.0f, -1.0f)
-		    ),
+	List( -0.5f, -0.5f, -0.5f ),
+	List( -0.5f, -0.5f,  0.5f ),
+	List( -0.5f,  0.5f,  0.5f ),
+	List( -0.5f,  0.5f, -0.5f ),
 
-		    // Bottom face
-		    List(
-			    List(-1.0f, -1.0f, -1.0f),
-			    List( 1.0f, -1.0f, -1.0f),
-			    List( 1.0f, -1.0f,  1.0f),
-			    List(-1.0f, -1.0f,  1.0f)
-		    ),
+	List( -0.5f,  0.5f, -0.5f ),
+	List( -0.5f,  0.5f,  0.5f ),
+	List(  0.5f,  0.5f,  0.5f ),
+	List(  0.5f,  0.5f, -0.5f ),
 
-		    // Right face
-		    List(
-			    List( 1.0f, -1.0f, -1.0f),
-			    List( 1.0f,  1.0f, -1.0f),
-			    List( 1.0f,  1.0f,  1.0f),
-			    List( 1.0f, -1.0f,  1.0f)
-		    ),
+	List( -0.5f, -0.5f, -0.5f ),
+	List( -0.5f, -0.5f,  0.5f ),
+	List(  0.5f, -0.5f,  0.5f ),
+	List(  0.5f, -0.5f, -0.5f )
+	)
 
-		    // Left face
-		    List(
-			    List(-1.0f, -1.0f, -1.0f),
-			    List(-1.0f, -1.0f,  1.0f),
-			    List(-1.0f,  1.0f,  1.0f),
-			    List(-1.0f,  1.0f, -1.0f)
-		    )
-		  );
-
-		vertices.zipWithIndex.map({ case (face, i) =>
-			face.zipWithIndex.map({ case (vertex, j) =>
-				Vertex(vertex(0) * WIDTH + 5.0f, vertex(1) * WIDTH + 5.0f, vertex(2) * WIDTH + 5.0f,
-					   normals(i)(0), normals(i)(1), normals(i)(2),
-					   texcoords(i)(j)(0),texcoords(i)(j)(1))
-					})
-				}).flatten(identity)
+		vertices.zipWithIndex.map({ case (vertex, i) =>
+			Vertex(vertex(0) * WIDTH + 5.0f, vertex(1) * WIDTH + 5.0f, vertex(2) * WIDTH + 5.0f,
+				0.0f, 0.0f, 1.0f,
+				   //normals(i / 4)(0), normals(i / 4)(1), normals(i / 4)(2),
+				   texcoords(i)(0),texcoords(i)(1))
+			})
 	}
 
 	override def getIndices() = 0 until 24
@@ -148,7 +94,7 @@ class SkyModel(val x: Float, val y: Float, val z: Float)
 class SkyBox() extends VBOModelEntity {
 	val WIDTH = 0.5f
 
-	x = 1.0f
+	x = 0.0f
 	y = 0.0f
 	z = 0.0f
 
@@ -168,9 +114,7 @@ class SkyBox() extends VBOModelEntity {
 	    glCullFace(GL_FRONT)
 	    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
 	    camera.loadGLMatrices()
-	    x = camera.centerX
-	    y = camera.centerY
-	    z = camera.centerZ
+	    glRotatef(90.0f, 1.0f, 0.0f, 0.0f)
 
 	    renderGL(shader)
 	    glPopAttrib()
