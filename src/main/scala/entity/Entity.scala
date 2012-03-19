@@ -23,14 +23,20 @@ trait Entity {
     flickerCounter = 300
   }
 
+  // This is the 'right' way to kill an in-game object.
   def kill() = {
     flickerCounter = 300
     goingToDie = true
   }
 
+  // This instantly removes the current entity from the game.
+  def remove(m: EntityManager) = {
+    m.entities = m.entities.remove(_ == this)
+  }
+
   // Generic method called before update() on each entity.
 
-  def pre_update() = {
+  def pre_update(m: EntityManager) = {
     val FLICKER_SPEED = 10 // bigger == slower
 
     if (flickerCounter > 0) {
@@ -38,7 +44,11 @@ trait Entity {
 
       visible = ((flickerCounter / 10) % 2 == 0)
     } else {
-      visible = true
+      if (goingToDie) {
+        remove(m)
+      } else {
+        visible = true
+      }
     }
   }
 
@@ -167,8 +177,10 @@ class EntityManager {
 
   def updateAll() = {
     entities.filter(e => e.traits.contains("update")).foreach{ent =>
-      ent.pre_update()
-      ent.update(this)
+      ent.pre_update(this)
+      if (!ent.goingToDie) {
+        ent.update(this)
+      }
     }
   }
 

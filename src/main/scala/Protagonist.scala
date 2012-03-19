@@ -105,6 +105,10 @@ class Protagonist(val ghost: Ghost) extends VBOModelEntity {
         x = ghost.x
         y = ghost.y
         z = ghost.z
+
+        m.entities.filter(e => e.traits.contains("enemy") && e.x == x && e.y == y && e.z == z && e != this).map { ent =>
+          ent.kill()
+        }
       }
     }
   }
