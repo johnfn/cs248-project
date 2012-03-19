@@ -11,7 +11,8 @@ trait Entity {
   var initGLDone = false
   var (x, y, z) = (0.0f, 0.0f, 0.0f)
   var visible = true
-  var flicker_counter: Int = 0
+  var flickerCounter: Int = 0
+  var goingToDie: Boolean = false
 
   def checkInit() = if(!initGLDone) {
     doInitGL()
@@ -19,7 +20,12 @@ trait Entity {
   }
 
   def flicker() = {
-    flicker_counter = 300
+    flickerCounter = 300
+  }
+
+  def kill() = {
+    flickerCounter = 300
+    goingToDie = true
   }
 
   // Generic method called before update() on each entity.
@@ -27,10 +33,10 @@ trait Entity {
   def pre_update() = {
     val FLICKER_SPEED = 10 // bigger == slower
 
-    if (flicker_counter > 0) {
-      flicker_counter -= 1
+    if (flickerCounter > 0) {
+      flickerCounter -= 1
 
-      visible = ((flicker_counter / 10) % 2 == 0)
+      visible = ((flickerCounter / 10) % 2 == 0)
     } else {
       visible = true
     }
@@ -103,7 +109,7 @@ class EntityManager {
   // If coord is false, return the entity the mouse is over or None.
   private def pick(coord: Boolean): Option[Any] = {
     var (pos, dir) = getPickRay()
-    val b:Block = entities.filter(_.traits.contains("moveable")).head.asInstanceOf[Block]
+    val b:List[Block] = entities.filter(_.traits.contains("moveable")).map{ _.asInstanceOf[Block] }
     val lv:Level = entities.filter(_.traits.contains("level")).head.asInstanceOf[Level]
 
     // TODO (?) This method for checking ray/box collisions is pretty darn
@@ -124,8 +130,8 @@ class EntityManager {
         val res = lv.intersect(pos.x, pos.y, pos.z)
         if (res.isDefined) return res
       } else {
-        if (b.intersect(pos.x, pos.y, pos.z)) {
-          return Some(b)
+        b.filter(_.intersect(pos.x, pos.y, pos.z)).foreach { block =>
+          return Some(block)
         }
       }
     }
