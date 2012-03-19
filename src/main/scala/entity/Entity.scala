@@ -10,10 +10,30 @@ trait Entity {
 
   var initGLDone = false
   var (x, y, z) = (0.0f, 0.0f, 0.0f)
+  var visible = true
+  var flicker_counter: Int = 0
 
   def checkInit() = if(!initGLDone) {
     doInitGL()
     initGLDone = true
+  }
+
+  def flicker() = {
+    flicker_counter = 300
+  }
+
+  // Generic method called before update() on each entity.
+
+  def pre_update() = {
+    val FLICKER_SPEED = 10 // bigger == slower
+
+    if (flicker_counter > 0) {
+      flicker_counter -= 1
+
+      visible = ((flicker_counter / 10) % 2 == 0)
+    } else {
+      visible = true
+    }
   }
 
   def traits() = List("render", "update")
@@ -140,17 +160,21 @@ class EntityManager {
   }
 
   def updateAll() = {
-    entities.filter(_.traits.contains("update")).foreach(_.update(this))
+    entities.filter(e => e.traits.contains("update")).foreach{ent =>
+      ent.pre_update()
+      ent.update(this)
+    }
   }
 
   def renderAll(shader: Shader) = {
     import GL11._
 
-    entities.filter(_.traits.contains("render")).foreach(obj =>
-      {
+    entities.filter(_.traits.contains("render")).foreach{obj =>
+      if (obj.visible) {
         glPushMatrix()
         obj.renderGL(shader)
         glPopMatrix()
-      })
+      }
+    }
   }
 }

@@ -23,7 +23,6 @@ object ExtendedKeyboard {
     for (key <- 0 until 255) {
       if (Keyboard.isKeyDown(key)) {
         keys(key) = true
-        println(key)
       } else {
         keysReleased(key) = false
 

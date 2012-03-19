@@ -35,6 +35,9 @@ class Protagonist(val ghost: Ghost) extends VBOModelEntity {
   x = 0.0f
   y = 0.0f
   z = 0.0f
+
+  var (safe_x, safe_y, safe_z) = (x, y, z)
+
   val model = new SquareModel(x, y, z)//, List(250, 0, 0))
 
   var vz = 0.0f
@@ -106,6 +109,14 @@ class Protagonist(val ghost: Ghost) extends VBOModelEntity {
     }
   }
 
+  def hurt() = {
+    x = safe_x
+    y = safe_y
+    z = safe_z
+
+    flicker()
+  }
+
   // This function will keep track of the gravity gun - namely, if it's being
   // used, and what object it's moving.
 
@@ -138,6 +149,12 @@ class Protagonist(val ghost: Ghost) extends VBOModelEntity {
     }
   }
 
+  def checkIfHurt(m: EntityManager) = {
+    m.entities.filter(e => e.traits.contains("enemy") && e.x == x && e.y == y).headOption.map { ent =>
+      hurt()
+    }
+  }
+
   override def update(m:EntityManager) = {
     // This is a common enough idiom that it may be worth abstracting out.
     val lv:Level = m.entities.filter(_.traits.contains("level")).head.asInstanceOf[Level]
@@ -146,6 +163,7 @@ class Protagonist(val ghost: Ghost) extends VBOModelEntity {
     if (ticks % 5 == 0) {
       move(m, lv)
       moveGhost(m, lv)
+      checkIfHurt(m)
     }
 
     teleport(m, lv)

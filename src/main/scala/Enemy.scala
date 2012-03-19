@@ -48,6 +48,14 @@ class Enemy(enemy_x: Float, enemy_y: Float) extends VBOModelEntity {
 		}
 	}
 
+	def hurtProtagonist(m: EntityManager) = {
+	    val p:Protagonist = m.entities.filter(_.traits.contains("protagonist")).head.asInstanceOf[Protagonist]
+
+	    if (p.x == x && p.y == y) {
+	    	p.hurt()
+	    }
+	}
+
 	override def update(m: EntityManager) = {
 		ticks += 1
 
@@ -67,6 +75,8 @@ class Enemy(enemy_x: Float, enemy_y: Float) extends VBOModelEntity {
 					x = newx
 					y = newy
 					z = lv.height(newx, newy)
+
+					hurtProtagonist(m)
 				} else {
 					chooseNewDestination()
 				}
