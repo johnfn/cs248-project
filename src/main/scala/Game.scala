@@ -1,6 +1,7 @@
 package edu.stanford.cs248.project
 
 import org.lwjgl.opengl._
+import org.lwjgl.util.glu.Project
 import org.lwjgl.input.Keyboard._
 import GL11._
 import GL20._
@@ -159,10 +160,12 @@ object Main {
     gbufShader.use()
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+    //TODO move into skybox.render()
+
     camera.loadGLMatrices()
     camera.passInUniforms(gbufShader)
 
-    skybox.renderGL(gbufShader)
+    skybox.render(camera, gbufShader)
     manager.renderAll(gbufShader)
 
     // Render SSAO pass

@@ -35,7 +35,7 @@ trait VBOModel {
     nVerts = verts.size
     val indices = getIndices()
     nIdxs = indices.size
-    
+
     // bind and allocate vbo for vertices
     glBindBufferARB(GL_ARRAY_BUFFER_ARB, vertexVboId)
     glBufferDataARB(GL_ARRAY_BUFFER_ARB, Vertex.strideSize*nVerts,
@@ -89,10 +89,11 @@ trait VBOModel {
     // set pointers to data
     glVertexPointer(3, GL_FLOAT, Vertex.strideSize, Vertex.posOffset)
     glNormalPointer(GL_FLOAT, Vertex.strideSize, Vertex.norOffset)
-    
+
     additionalPredraw(shader)
-    
+
     // bind element data
+
     glDrawElements(drawMode, nIdxs, GL_UNSIGNED_INT, 0)
 
     // unbind buffers
@@ -107,33 +108,33 @@ trait VBOModel {
   def additionalPredraw(shader: Shader) = {}
 }
 
-abstract class TexturedVBOModel(texDif: Texture, texSpc: Texture) 
-  extends VBOModel 
+abstract class TexturedVBOModel(texDif: Texture, texSpc: Texture)
+  extends VBOModel
 {
   var texId = 0
   def texDifUnit = 0
-  def texSpcUnit = 1  
-  
+  def texSpcUnit = 1
+
   override def init() = {
     import GL11._
     import GL13._
     import GL30._
-    
+
     super.init()
     texDif.init()
     texSpc.init()
   }
-  
+
   override def additionalPredraw(shader: Shader) = {
     import GL11._
     import GL13._
     import GL20._
-    
+
     texDif.bind(texDifUnit)
     texSpc.bind(texSpcUnit)
     glUniform1i(glGetUniformLocation(shader.id, "texDif"), texDifUnit)
     glUniform1i(glGetUniformLocation(shader.id, "texSpc"), texSpcUnit)
-    
+
     // Bind texture coordinates
     glEnableVertexAttribArray(glGetAttribLocation(shader.id, "texcoordIn"))
     glVertexAttribPointer(glGetAttribLocation(shader.id, "texcoordIn"),

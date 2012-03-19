@@ -20,6 +20,7 @@ class SkyModel(val x: Float, val y: Float, val z: Float)
 	extends TexturedVBOModel(new ImageTexture("/textures/skybox.jpg"),
 		 					 new ColorTexture(0, 0, 0)) {
 	val name = "skybox"
+	val WIDTH = 10.0f
 
 	override def getVertices() = {
 		var texcoords = List(
@@ -74,12 +75,12 @@ class SkyModel(val x: Float, val y: Float, val z: Float)
 		)
 
 		var normals = List(
-			List( 0.0f, 0.0f, -1.0f),
 			List( 0.0f, 0.0f,  1.0f),
-			List( 0.0f, 1.0f,  0.0f),
+			List( 0.0f, 0.0f, -1.0f),
 			List( 0.0f,-1.0f,  0.0f),
-			List(-1.0f, 0.0f,  0.0f),
-			List( 1.0f, 0.0f,  0.0f)
+			List( 0.0f, 1.0f,  0.0f),
+			List( 1.0f, 0.0f,  0.0f),
+			List(-1.0f, 0.0f,  0.0f)
 			)
 
 		var vertices = List(
@@ -134,7 +135,7 @@ class SkyModel(val x: Float, val y: Float, val z: Float)
 
 		vertices.zipWithIndex.map({ case (face, i) =>
 			face.zipWithIndex.map({ case (vertex, j) =>
-				Vertex(vertex(0) / 2.0f, vertex(1) / 2.0f, vertex(2) / 2.0f - 0.5f,
+				Vertex(vertex(0) * WIDTH + 5.0f, vertex(1) * WIDTH + 5.0f, vertex(2) * WIDTH + 5.0f,
 					   normals(i)(0), normals(i)(1), normals(i)(2),
 					   texcoords(i)(j)(0),texcoords(i)(j)(1))
 					})
@@ -150,6 +151,34 @@ class SkyBox() extends VBOModelEntity {
 	x = 1.0f
 	y = 0.0f
 	z = 0.0f
+
+	def render(camera: Camera, shader: Shader) = {
+		import GL11._
+		import GL20._
+
+	    glPushMatrix()
+	    glPushAttrib(GL_ENABLE_BIT)
+	    glEnable(GL_TEXTURE_2D)
+	    glDisable(GL_DEPTH_TEST)
+	    glDisable(GL_LIGHTING)
+	    glDisable(GL_BLEND)
+	    glColor4f(1.0f, 1.0f, 1.0f, 1.0f)
+	    glLoadIdentity()
+
+	    glCullFace(GL_FRONT)
+	    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
+	    camera.loadGLMatrices()
+	    x = camera.centerX
+	    y = camera.centerY
+	    z = camera.centerZ
+
+	    renderGL(shader)
+	    glPopAttrib()
+	    glPopMatrix()
+
+	    glCullFace(GL_BACK)
+
+	}
 
 	val model = new SkyModel(x, y, z)
 }
