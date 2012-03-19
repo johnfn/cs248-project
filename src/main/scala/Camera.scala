@@ -54,10 +54,9 @@ class Camera extends Entity {
     viewMatrix = new Matrix4f()
     var buf: FloatBuffer = BufferUtils.createFloatBuffer(16 * 4);
 
-    // Get your current model view matrix from OpenGL.
+    // Get the current model view matrix from OpenGL.
     glGetFloat(GL_MODELVIEW_MATRIX, buf);
 
-    // rewind the buffer
     buf.rewind();
 
     viewMatrix.m00 = buf.get(0)
@@ -79,6 +78,40 @@ class Camera extends Entity {
     viewMatrix.m31 = buf.get(13)
     viewMatrix.m32 = buf.get(14)
     viewMatrix.m33 = buf.get(15)
+  }
+
+  def facingCamMat() = {
+    import java.nio._
+    import org.lwjgl._
+
+    var result = new Matrix4f(viewMatrix)
+
+     val d: Float = math.sqrt(result.m00 * result.m00 +
+                              result.m01 * result.m01 +
+                              result.m02 * result.m02 ).asInstanceOf[Float]
+
+    result.m00 = d
+    result.m11 = d
+    result.m22 = d
+
+    result.m01 = 0.0f
+    result.m02 = 0.0f
+    result.m03 = 0.0f
+    result.m12 = 0.0f
+    result.m13 = 0.0f
+    result.m23 = 0.0f
+
+    result.m10 = 0.0f
+    result.m20 = 0.0f
+    result.m21 = 0.0f
+
+    result.m33 = 1.0f
+
+    var buf: FloatBuffer = BufferUtils.createFloatBuffer(16 * 4);
+    result.store(buf)
+    buf.rewind()
+
+    buf
   }
 
   def loadIntoTextureMatrices() = {

@@ -49,6 +49,7 @@ object Main {
 
   val camera = new Camera()
   val manager = new EntityManager()
+  val partmanager = new ParticleManager()
   var skybox: SkyBox = null
 
   val gbufFbo = new MrtFloatFbo(3, WIDTH, HEIGHT)
@@ -139,6 +140,8 @@ object Main {
     manager.add(new Block(9, 8, 0))
     manager.add(new Enemy(6, 6))
 
+    partmanager.add(new Particle(5.0f, 0.0f, 1.0f))
+
     skybox = new SkyBox()
   }
 
@@ -167,6 +170,7 @@ object Main {
 
     skybox.render(camera, gbufShader)
     manager.renderAll(gbufShader)
+    partmanager.renderAll(camera, gbufShader)
 
     // Render SSAO pass
     ssaoFbo.bind()
