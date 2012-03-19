@@ -42,8 +42,8 @@ class Protagonist(val ghost: Ghost) extends VBOModelEntity {
 
   override def traits() = List("protagonist", "render", "update")
 
-  def move(lv: Level) = {
-    val onGround:Boolean = (z <= lv.height(x, y))
+  def move(m: EntityManager, lv: Level) = {
+    val onGround:Boolean = (z <= m.height(x, y, this))
 
     var newx = x
     var newy = y
@@ -54,7 +54,7 @@ class Protagonist(val ghost: Ghost) extends VBOModelEntity {
       if (isKeyDown(KEY_SPACE)) {
         vz += JUMP_HEIGHT
       } else {
-        newz = lv.height(x, y)
+        newz = m.height(x, y, this)
       }
 
     } else {
@@ -63,8 +63,8 @@ class Protagonist(val ghost: Ghost) extends VBOModelEntity {
 
     newz += vz
 
-    if (newz <= lv.height(x, y)) {
-      newz = lv.height(x, y)
+    if (newz <= m.height(x, y, this)) {
+      newz = m.height(x, y, this)
     }
 
     if (isKeyDown(KEY_W)) newx += 1.0f
@@ -74,7 +74,7 @@ class Protagonist(val ghost: Ghost) extends VBOModelEntity {
     if (isKeyDown(KEY_D)) newy -= 1.0f
 
     if (lv.inBounds(newx, newy)) {
-      if (lv.height(newx, newy) - newz <= .5) {
+      if (m.height(newx, newy, this) - newz <= .5) {
         x = newx
         y = newy
       }
@@ -144,7 +144,7 @@ class Protagonist(val ghost: Ghost) extends VBOModelEntity {
     ticks += 1
 
     if (ticks % 5 == 0) {
-      move(lv)
+      move(m, lv)
       moveGhost(m, lv)
       teleport(m, lv)
     }

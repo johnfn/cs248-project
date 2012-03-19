@@ -113,6 +113,22 @@ class EntityManager {
     None
   }
 
+  // Find the highest object at (x, y) that we can stand on, not considering
+  // `ignoring`.  We'll need to ignore at least the object that's interested
+  // in what this object is, since it can't stand on itself.
+  def height(x: Float, y: Float, ignoring: Entity) = {
+    val lv: Level = entities.filter(_.traits.contains("level")).head.asInstanceOf[Level]
+    var highest = lv.height(x, y)
+
+    entities.filter(ent => ent.x == x && ent.y == y).map {ent =>
+      if (ent.z > highest && ignoring != ent) {
+        highest = ent.z
+      }
+    }
+
+    highest
+  }
+
   // Get the coordinate that the mouse is hovering over or None.
   def pickCoordinate(): Option[Tuple2[Int, Int]] = {
     pick(true).asInstanceOf[Option[Tuple2[Int, Int]]]

@@ -23,7 +23,7 @@ trait Moveable extends Entity {
 
 		x = newx
 		y = newy
-		z = lv.height(x, y)
+		z = m.height(x, y, this) + 1.0f
 	}
 }
 
@@ -83,7 +83,7 @@ class CubeModel(val x: Float, val y: Float, val z: Float) extends VBOModel {
 
 		vertices.map(face =>
 			face.map(vertex =>
-				Vertex(vertex(0) / 2.0f, vertex(1) / 2.0f, vertex(2) / 2.0f + 0.5f,
+				Vertex(vertex(0) / 2.0f, vertex(1) / 2.0f, vertex(2) / 2.0f - 0.5f,
 					   0, 0, 1,
 					   0, 0))).flatten(identity)
 	}
@@ -92,12 +92,13 @@ class CubeModel(val x: Float, val y: Float, val z: Float) extends VBOModel {
 }
 
 class Block(block_x: Float, block_y: Float, block_z: Float) extends VBOModelEntity with Moveable {
+	val WIDTH = 0.5f
+
 	x = block_x
 	y = block_y
-	z = block_z
+	z = block_z + 1.0f
 
 	val model = new CubeModel(x, y, z)
-	val width = 0.5f
 
 	// TODO: Could emit particles.
 	def select(selected: Boolean) = {
@@ -109,9 +110,9 @@ class Block(block_x: Float, block_y: Float, block_z: Float) extends VBOModelEnti
 	}
 
 	def intersect(px: Float, py: Float, pz: Float) = {
-		(px > x - width) && (px < x + width) &&
-		(py > y - width) && (py < y + width) &&
-		(pz > z) && (pz < z + 2.0f * width) //TODO - actual z value
+		(px > x - WIDTH) && (px < x + WIDTH) &&
+		(py > y - WIDTH) && (py < y + WIDTH) &&
+		(pz < z) && (pz > z - 2.0f * WIDTH)
 	}
 
 	override def traits() = List("render", "update", "moveable")
