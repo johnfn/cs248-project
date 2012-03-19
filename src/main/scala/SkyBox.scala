@@ -105,13 +105,13 @@ class SkyBox() extends VBOModelEntity {
 	    glPushMatrix()
 	    glPushAttrib(GL_ENABLE_BIT)
 	    glEnable(GL_TEXTURE_2D)
+	    glDisable(GL_CULL_FACE)
 	    glDisable(GL_DEPTH_TEST)
 	    glDisable(GL_LIGHTING)
 	    glDisable(GL_BLEND)
 	    glColor4f(1.0f, 1.0f, 1.0f, 1.0f)
 	    glLoadIdentity()
 
-	    glCullFace(GL_FRONT)
 	    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
 	    camera.loadGLMatrices()
 	    glRotatef(90.0f, 1.0f, 0.0f, 0.0f)
@@ -120,6 +120,7 @@ class SkyBox() extends VBOModelEntity {
 	    glPopAttrib()
 	    glPopMatrix()
 
+	    glEnable(GL_CULL_FACE)
 	    glCullFace(GL_BACK)
 
 	}
