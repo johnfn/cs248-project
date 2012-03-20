@@ -66,7 +66,7 @@ object Main {
   val finalShader = new Shader("minimal", "final")
 
   var curLevel : Level = null
-  var currentLevelNum = 1
+  var currentLevelNum = 4
 
   def main(args:Array[String]) = {
     var fullscreen = false
@@ -121,8 +121,6 @@ object Main {
 
     glViewport(0, 0, WIDTH, HEIGHT)
     glEnable(GL_DEPTH_TEST)
-    glEnable(GL_CULL_FACE)
-    glCullFace(GL_BACK)
   }
 
   def addObjects() = {

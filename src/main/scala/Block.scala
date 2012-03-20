@@ -107,7 +107,7 @@ class Block(block_x: Float, block_y: Float, block_z: Float) extends VBOModelEnti
 	y = block_y
 	z = block_z + 1.0f
 
-	val model = new CubeModel(x, y, z)
+	val model = new SkyModel(x, y, z, 1.0f, "/textures/skybox.jpg")
 
 	override def update(m: EntityManager) = {
 		if (!selected) {

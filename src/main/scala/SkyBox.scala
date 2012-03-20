@@ -16,11 +16,11 @@ import com.threed.jpct._
 import com.threed.jpct.util._
 import math._
 
-class SkyModel(val x: Float, val y: Float, val z: Float)
-	extends TexturedVBOModel(new ImageTexture("/textures/skybox.jpg"),
+class SkyModel(val x: Float, val y: Float, val z: Float, val size: Float, val texture: String)
+	extends TexturedVBOModel(new ImageTexture(texture),
 		 					 new ColorTexture(0, 0, 0)) {
 	val name = "skybox"
-	val WIDTH = 800.0f
+	val WIDTH = size
 
 	def offset(lists: List[List[Int]], offx: Float, offy: Float) = {
 		lists.map { case List(x, y) => List(x.toFloat * 0.25f + offx, y.toFloat * 0.33f + offy)}
@@ -81,7 +81,7 @@ val vertices = List(
 	)
 
 		vertices.zipWithIndex.map({ case (vertex, i) =>
-			Vertex(vertex(0) * WIDTH + 5.0f, vertex(1) * WIDTH + 5.0f, vertex(2) * WIDTH + 5.0f,
+			Vertex(vertex(0) * WIDTH, vertex(1) * WIDTH, vertex(2) * WIDTH - 0.5f,
 				0.0f, 0.0f, 1.0f,
 				   //normals(i / 4)(0), normals(i / 4)(1), normals(i / 4)(2),
 				   texcoords(i)(0),texcoords(i)(1))
@@ -105,7 +105,6 @@ class SkyBox() extends VBOModelEntity {
 	    glPushMatrix()
 	    glPushAttrib(GL_ENABLE_BIT)
 	    glEnable(GL_TEXTURE_2D)
-	    glDisable(GL_CULL_FACE)
 	    glDisable(GL_DEPTH_TEST)
 	    glDisable(GL_LIGHTING)
 	    glDisable(GL_BLEND)
@@ -119,11 +118,7 @@ class SkyBox() extends VBOModelEntity {
 	    renderGL(shader)
 	    glPopAttrib()
 	    glPopMatrix()
-
-	    glEnable(GL_CULL_FACE)
-	    glCullFace(GL_BACK)
-
 	}
 
-	val model = new SkyModel(x, y, z)
+	val model = new SkyModel(x, y, z, 800.0f, "/textures/skybox.jpg")
 }
