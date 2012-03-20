@@ -14,7 +14,7 @@ import edu.stanford.cs248.project.util._
 class LevelModel(val name: String)
   extends TexturedVBOModel(
     new ImageTexture("/textures/terrain_d.png"),
-    new ColorTexture(0, 0, 0))
+    new ImageTexture("/textures/terrain_s.png"))
 {
   val heightMap = new ImageMapGrayscale("/levels/"+name+"_h.png")
   val deltaXMap = heightMap.deltaXMap
@@ -242,13 +242,13 @@ class Level(val name: String) extends VBOModelEntity {
     val buf = ByteBuffer
       .allocateDirect(16).order(ByteOrder.nativeOrder()).asFloatBuffer()
 
-    buf.put(Array(3.0f, 3.0f, 3.0f, 3.0f)).flip()
+    buf.put(Array(0.7f, 0.7f, 0.7f, 1.0f)).flip()
     glLight(lightId, GL_AMBIENT,  buf)
-    buf.put(Array(0.5f, 0.5f, 0.5f, 1.0f)).flip()
+    buf.put(Array(0.7f, 0.7f, 0.7f, 1.0f)).flip()
     glLight(lightId, GL_DIFFUSE,  buf)
-    buf.put(Array(0.5f, 0.5f, 0.5f, 1.0f)).flip()
-    glLight(lightId, GL_SPECULAR, buf)
-    buf.put(Array(0.0f, 0.0f, 400.0f*zScale, 1.0f)).flip()
+    /*buf.put(Array(1.0f, 1.0f, 1.0f, 1.0f)).flip()
+    glLight(lightId, GL_SPECULAR, buf)*/
+    buf.put(Array(20.0f, 20.0f, 400.0f*zScale, 1.0f)).flip()
     glLight(lightId, GL_POSITION, buf)
   }
 }

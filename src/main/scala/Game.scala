@@ -220,6 +220,7 @@ object Main {
     // Render Screen
     screenFbo.bind()
     testShader.use()
+    
     ViewMode.bindForTestShader(testShader)
 
     drawQuad(testShader)

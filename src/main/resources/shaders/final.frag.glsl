@@ -30,6 +30,7 @@ void main()
   vec4 finalColor = vec4(0.0, 0.0, 0.0, 0.0);
 
   vec4 difMat = texture2D(difGbuf, texcoord);
+  vec4 spcMat = texture2D(spcGbuf, texcoord);
   
   if(difMat.xyz != vec3(0., 0., 0.)) {  
     vec4 aoFactor = texture2D(ssaoBuf, texcoord);
@@ -42,19 +43,19 @@ void main()
   
       //calculate Ambient Term:
       vec4 Iamb =
-        gl_FrontLightProduct[i].ambient*difMat*aoFactor;
+        gl_LightSource[i].ambient*difMat*aoFactor;
   
       //calculate Diffuse Term:
       vec4 Idiff =
-        gl_FrontLightProduct[i].diffuse * max(dot(N,L), 0.0)*difMat;
+        gl_LightSource[i].diffuse * max(dot(N,L), 0.0)*difMat;
       Idiff = clamp(Idiff, 0.0, 1.0);
   
       // calculate Specular Term:
-      vec4 Ispec = gl_FrontLightProduct[i].specular
-             * pow(max(dot(R,E),0.0),0.3*gl_FrontMaterial.shininess);
+      vec4 Ispec = gl_LightSource[i].specular * spcMat
+             * pow(max(dot(R,E),0.0),0.3*300.0);
       Ispec = clamp(Ispec, 0.0, 1.0);
   
-      //finalColor += Idiff;
+      //finalColor += Ispec;
       finalColor += Iamb + Idiff + Ispec;
       //finalColor += vec4(L, 1);
     }
