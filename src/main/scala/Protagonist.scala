@@ -67,7 +67,7 @@ class Protagonist(val ghost: Ghost) extends VBOModelEntity {
       // if we're standing on lava right now...
 
       // so many things wrong with this line of code that i dont even want to talk about it.
-      if (lv.model.texMap.valueAt(x.asInstanceOf[Int], y.asInstanceOf[Int]) == 4) {
+      if (lv.model.inBounds(x.asInstanceOf[Double], y.asInstanceOf[Double]) && lv.model.texMap.valueAt(x.asInstanceOf[Int], y.asInstanceOf[Int]) == 4) {
         hurt()
         return
       }
@@ -101,6 +101,12 @@ class Protagonist(val ghost: Ghost) extends VBOModelEntity {
     }
 
     z = newz
+  }
+
+  def hasWon(m: EntityManager) = {
+    val lv:Level = m.entities.filter(_.traits.contains("level")).head.asInstanceOf[Level]
+
+    lv.model.texMap.valueAt(x.asInstanceOf[Int], y.asInstanceOf[Int]) == 7
   }
 
   def moveGhost(m: EntityManager, lv: Level) = {
@@ -162,7 +168,7 @@ class Protagonist(val ghost: Ghost) extends VBOModelEntity {
 
         case None => {
           m.pickEntity().map { ent =>
-            if (ent.traits.contains("moveable")) {
+            if ( !(ent.x == x && ent.y == y) && ent.traits.contains("moveable")) {
               Sound.playSnd("beam")
               val e = ent.asInstanceOf[Moveable]
               gravGunObj = Some(e)

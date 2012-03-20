@@ -53,14 +53,6 @@ class LevelModel(val name: String)
     heightMap.valueAt(clampedX.toInt, clampedY.toInt)*zScale
   }
 
-  /*
-  def toCoordinates(x: Float, y: Float) = {
-    import math._
-
-    (floor(x + 0.5f), floor(y + 0.5f))
-  }
-  */
-
   for (x <- 0 until xSize; y <- 0 until ySize) {
     val color = texMap.valueAt(x, y)
     val height = heightMap.valueAt(x, y) * zScale

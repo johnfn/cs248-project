@@ -66,6 +66,7 @@ object Main {
   val finalShader = new Shader("minimal", "final")
 
   var curLevel : Level = null
+  var currentLevelNum = 1
 
   def main(args:Array[String]) = {
     var fullscreen = false
@@ -126,13 +127,14 @@ object Main {
 
   def addObjects() = {
     skybox = new SkyBox()
-    loadLevel()
+    loadLevel(4)
   }
 
-  def loadLevel() = {
+  def loadLevel(which: Integer) = {
     val ghost = new Ghost()
+    manager.entities = List()
 
-    curLevel = new Level("level1")
+    curLevel = new Level("level" + which)
     for (e <- curLevel.newEntities) {
       manager.add(e)
     }
@@ -250,6 +252,15 @@ object Main {
     glEnd()
   }
 
+  def checkNextLevel() {
+    val pro:Protagonist = manager.entities.filter(_.traits.contains("protagonist")).head.asInstanceOf[Protagonist]
+
+    if (pro.hasWon(manager)) {
+      currentLevelNum += 1
+      loadLevel(currentLevelNum)
+    }
+  }
+
   def run() = {
     val fpsPrintInterval = 5000;
     var lastPrintTime = System.nanoTime()/1000000
@@ -260,6 +271,8 @@ object Main {
       ExtendedKeyboard.update()
       Display.update()
       renderGame()
+      checkNextLevel()
+
       //Display.sync(FRAMERATE)
       framesDrawnSinceLastPrint += 1
 
