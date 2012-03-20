@@ -12,6 +12,11 @@ import scala.util.control.Breaks._
 import edu.stanford.cs248.project.entity._
 import edu.stanford.cs248.project.opengl._
 
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
+
+import javazoom.jl.player.Player;
+
 // This is needed because the current keyboard object doesn't keep
 // track of key releases, which is all we really care about...
 object ExtendedKeyboard {
@@ -68,7 +73,21 @@ object Main {
   var curLevel : Level = null
   var currentLevelNum = 2
 
+  def playMusic() = {
+    val fis:FileInputStream      = new FileInputStream("./src/main/resources/sounds/soundtrack.mp3")
+    val bis:BufferedInputStream = new BufferedInputStream(fis)
+    val player: Player = new Player(bis)
+
+    new Thread() {
+        override def run() {
+          player.play();
+        }
+    }.start();
+  }
+
   def main(args:Array[String]) = {
+    import edu.stanford.cs248.project.util._
+
     var fullscreen = false
     for(arg <- args){
       arg match{
@@ -79,6 +98,7 @@ object Main {
 
     init(fullscreen)
     addObjects()
+    playMusic()
     run()
     gameOver()
   }
