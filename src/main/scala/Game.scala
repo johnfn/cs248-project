@@ -66,7 +66,7 @@ object Main {
   val finalShader = new Shader("minimal", "final")
 
   var curLevel : Level = null
-  var currentLevelNum = 4
+  var currentLevelNum = 1
 
   def main(args:Array[String]) = {
     var fullscreen = false
