@@ -169,6 +169,7 @@ object Main {
 
     camera.loadGLMatrices()
 
+    skybox.render(camera, gbufShader)
     manager.renderAll(gbufShader)
     //partmanager.renderAll(camera, gbufShader)
 
@@ -203,14 +204,16 @@ object Main {
     glEnable(GL_BLEND)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
+    /*
     testShader.use()
     camera.loadGLMatrices()
 
     skybox.render(camera, testShader)
+    */
 
     finalShader.use()
     ViewMode.bindGBufs(finalShader)
-    //ssaoFbo.tex.bindAndSetShader(3, finalShader, "ssaoBuf");
+    ssaoFbo.tex.bindAndSetShader(3, finalShader, "ssaoBuf");
     blurYFbo.tex.bindAndSetShader(3, finalShader, "ssaoBuf");
 
     camera.loadIntoTextureMatrices()
