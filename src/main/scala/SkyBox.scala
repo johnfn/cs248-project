@@ -16,7 +16,7 @@ import com.threed.jpct._
 import com.threed.jpct.util._
 import math._
 
-class SkyModel(val x: Float, val y: Float, val z: Float, val size: Float, val texture: String)
+class SkyModel(val x: Float, val y: Float, val z: Float, val size: Float, val texture: String, val tweak: Float = 0.0f)
 	extends TexturedVBOModel(new ImageTexture(texture),
 		 					 new ColorTexture(0, 0, 0)) {
 	val name = "skybox"
@@ -81,7 +81,7 @@ val vertices = List(
 	)
 
 		vertices.zipWithIndex.map({ case (vertex, i) =>
-			Vertex(vertex(0) * WIDTH, vertex(1) * WIDTH, vertex(2) * WIDTH - 0.5f,
+			Vertex(vertex(0) * WIDTH, vertex(1) * WIDTH, vertex(2) * WIDTH - 0.5f + tweak,
 				0.0f, 0.0f, 1.0f,
 				   //normals(i / 4)(0), normals(i / 4)(1), normals(i / 4)(2),
 				   texcoords(i)(0),texcoords(i)(1))

@@ -19,7 +19,7 @@ void main()
   float PI = 3.14159265358979323846264;
   int nAngles = 4;
   float lookupStep = 0.20;
-  float nSamples = 3.;
+  float nSamples = 6.;
   float epsilon = 0.05;
   float maxZdiff = 2.0;
 

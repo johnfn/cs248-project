@@ -24,8 +24,6 @@ class Ghost() extends VBOModelEntity {
     x = newx
     y = newy
     z = newz
-
-    println(x + " " + y + " " + z)
   }
 }
 
@@ -41,8 +39,7 @@ class Protagonist(val ghost: Ghost) extends VBOModelEntity {
 
   var (safe_x, safe_y, safe_z) = (x, y, z)
 
-  val model = new SquareModel(x, y, z)//, List(250, 0, 0))
-
+  val model = new SkyModel(x, y, z, 1.0f, "/textures/protagonist.png", 1.0f)
   var vz = 0.0f
   var ticks = 0
 

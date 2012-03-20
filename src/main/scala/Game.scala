@@ -141,6 +141,7 @@ object Main {
     manager.add(curLevel)
     manager.add(ghost)
     manager.add(new Protagonist(ghost))
+    //partmanager.add(new Particle(2.0f, 2.0f, 1.0f))
   }
 
   def gameOver() = {
@@ -168,8 +169,8 @@ object Main {
     camera.loadGLMatrices()
 
     skybox.render(camera, gbufShader)
-    manager.renderAll(gbufShader)
     //partmanager.renderAll(camera, gbufShader)
+    manager.renderAll(gbufShader)
 
     // Render SSAO pass
     ssaoFbo.bind()

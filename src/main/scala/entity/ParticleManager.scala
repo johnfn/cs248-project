@@ -24,20 +24,18 @@ class ParticleManager {
     import java.nio._
     import org.lwjgl._
 
-    glDisable(GL_CULL_FACE)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
     glEnable(GL_BLEND)
     glDepthMask(false)
 
     entities.foreach { part =>
       glPushMatrix()
-      glColor4f(0.0f, 0.0f, 0.0f, 0.0f)
+      glColor4f(0.0f, 0.0f, 0.0f, 1.0f)
       part.renderGL(shader)
       glPopMatrix()
     }
 
     glDisable(GL_BLEND)
     glDepthMask(true)
-    glEnable(GL_CULL_FACE)
   }
 }
