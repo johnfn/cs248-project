@@ -127,7 +127,7 @@ object Main {
 
   def addObjects() = {
     skybox = new SkyBox()
-    loadLevel(4)
+    loadLevel(currentLevelNum)
   }
 
   def loadLevel(which: Integer) = {

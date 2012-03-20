@@ -67,7 +67,7 @@ class Protagonist(val ghost: Ghost) extends VBOModelEntity {
       // if we're standing on lava right now...
 
       // so many things wrong with this line of code that i dont even want to talk about it.
-      if (lv.model.inBounds(x.asInstanceOf[Double], y.asInstanceOf[Double]) && lv.model.texMap.valueAt(x.asInstanceOf[Int], y.asInstanceOf[Int]) == 4) {
+      if (lv.model.inBounds(x.asInstanceOf[Double], y.asInstanceOf[Double]) && z == lv.height(x, y) && lv.model.texMap.valueAt(x.asInstanceOf[Int], y.asInstanceOf[Int]) == 4) {
         hurt()
         return
       }
