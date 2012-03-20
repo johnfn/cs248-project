@@ -2,6 +2,8 @@
 
 A game written in Scala.
 
+WASD to move. X to teleport. Click and drag to move crates around. Get to the white square to move to the next area.
+
 ## Development notes
 
 ### Pixel position reconstruction
@@ -22,6 +24,11 @@ Our results were pretty good, but not perfect. The technique was expensive enoug
 
 http://tommycli.com/opengl-is-not-rl 
 
-## Thanks to
+### Mouse picking
 
-* `jPCT` - www.jpct.net
+In order to figure out which object was being clicked on for the gravity gun, we needed to use a technique called 'mouse picking'. The basic concept is to cast a ray through the screen from the position of the mouse, and return the first object that collides with that ray.
+
+## Libraries used
+
+* `jPCT` - www.jpct.net - for loading models
+* `jl1.0` - for playing music.
