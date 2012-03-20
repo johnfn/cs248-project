@@ -187,6 +187,11 @@ class Camera extends Entity {
     camX = (camR*cos(camPhi)*sin(camTheta) + centerX).asInstanceOf[Float]
     camY = (camR*sin(camPhi)*sin(camTheta) + centerY).asInstanceOf[Float]
     camZ = (camR*cos(camTheta) + centerZ).asInstanceOf[Float]
+    
+    if(Main.curLevel != null) {
+      val minZ = Main.curLevel.height(camX, camY) + 2.0f
+      camZ = max(camZ, minZ)
+    }
   }
 
   def multModelViewMatrix() {
@@ -217,6 +222,8 @@ class Camera extends Entity {
 
   override def traits() = List("camera", "update")
 
+  var prevMouseX = -1
+  var prevMouseY = -1
   override def update(m: EntityManager) {
     val dx = Mouse.getDX()
     val dy = Mouse.getDY()
@@ -228,6 +235,7 @@ class Camera extends Entity {
     centerZ = centerZ + (pr.z - centerZ) / CAM_LAG
 
     if(Mouse.isButtonDown(1)) {
+      Mouse.setGrabbed(true)
       val yInvert = 3.0 // no invert
       val mouseSensitivity = 0.005
 
@@ -235,10 +243,19 @@ class Camera extends Entity {
       camPhi   += -(dx*mouseSensitivity).asInstanceOf[Float]
 
       // limit movement of camera
-      camTheta = max(min(camTheta, (Pi-0.001f).asInstanceOf[Float]), 0.001f)
+      camTheta = max(
+        min(camTheta, (Pi/2.0f-0.001f).asInstanceOf[Float]), 0.001f)
       camPhi   = (camPhi % (2*Pi)).asInstanceOf[Float]
 
       //println("Camera (r,t,p) = (%f,%f,%f)".format(camR, camTheta, camPhi))
+      
+      
+      // Set the cursor position and reset the delta tracker
+      Mouse.setCursorPosition(Mouse.getX-dx, Mouse.getY-dy)
+      Mouse.getDX()
+      Mouse.getDY()
+    } else {
+      Mouse.setGrabbed(false)
     }
   }
 }

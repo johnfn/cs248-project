@@ -57,6 +57,7 @@ class Protagonist(val ghost: Ghost) extends VBOModelEntity {
     if (onGround) {
       vz = 0
       if (isKeyDown(KEY_SPACE)) {
+        Sound.playSnd("jump")
         vz += JUMP_HEIGHT
       } else {
         newz = m.height(x, y, this)
@@ -72,6 +73,10 @@ class Protagonist(val ghost: Ghost) extends VBOModelEntity {
       newz = m.height(x, y, this)
     }
 
+    if(List(KEY_W, KEY_S, KEY_A, KEY_D).map(isKeyDown).contains(true)) {
+      Sound.playSnd("move")
+    }
+    
     if (isKeyDown(KEY_W)) newx += 1.0f
     if (isKeyDown(KEY_S)) newx -= 1.0f
 
@@ -116,6 +121,8 @@ class Protagonist(val ghost: Ghost) extends VBOModelEntity {
   }
 
   def hurt() = {
+    Sound.playSnd("explode")
+    
     x = safe_x
     y = safe_y
     z = safe_z
@@ -128,27 +135,36 @@ class Protagonist(val ghost: Ghost) extends VBOModelEntity {
 
   // Let's call it the "Mass Transport Device" or something as to not
   // instantly give away how we're ripping off HL2...
+  var mouseDownFrames : Long = 0
   def updateGravGun(m: EntityManager) = {
     if (Mouse.isButtonDown(0)) {
+      mouseDownFrames += 1
+      
       gravGunObj match {
         case Some(ent) => {
           m.pickCoordinate().map { case(x, y) => ent.setPosition(m, x, y) }
           //TODO
           //ent.setHighlighted(true)
+          if(mouseDownFrames % 10 == 0) Sound.playSnd("beam")
         }
 
         case None => {
           m.pickEntity().map { ent =>
             if (ent.traits.contains("moveable")) {
+              Sound.playSnd("beam")
               val e = ent.asInstanceOf[Moveable]
               gravGunObj = Some(e)
               e.select(true)
             }
+          } getOrElse {
+            if(mouseDownFrames == 1) Sound.playSnd("fizzle")
           }
         }
       }
     } else {
+      mouseDownFrames = 0
       gravGunObj map { ent =>
+        Sound.playSnd("beam")
         ent.asInstanceOf[Moveable].select(false)
         gravGunObj = None
       }
