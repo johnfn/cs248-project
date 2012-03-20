@@ -17,7 +17,7 @@ import com.threed.jpct.util._
 import math._
 
 class SkyModel(val x: Float, val y: Float, val z: Float)
-	extends TexturedVBOModel(new ImageTexture("/textures/skybox2.gif"),
+	extends TexturedVBOModel(new ImageTexture("/textures/skybox.jpg"),
 		 					 new ColorTexture(0, 0, 0)) {
 	val name = "skybox"
 	val WIDTH = 800.0f
