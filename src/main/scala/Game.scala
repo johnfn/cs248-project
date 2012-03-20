@@ -158,6 +158,8 @@ object Main {
   }
 
   def renderGame() = {
+    glDisable(GL_BLEND)
+    
     // Render G - buffers
     gbufFbo.bind()
     gbufShader.use()
@@ -166,9 +168,7 @@ object Main {
     //TODO move into skybox.render()
 
     camera.loadGLMatrices()
-    camera.passInUniforms(gbufShader)
-
-    skybox.render(camera, gbufShader)
+    
     manager.renderAll(gbufShader)
     partmanager.renderAll(camera, gbufShader)
 
@@ -176,7 +176,6 @@ object Main {
     ssaoFbo.bind()
     ssaoShader.use()
 
-    camera.passInUniforms(ssaoShader)
     camera.loadIntoTextureMatrices()
     ViewMode.bindGBufs(ssaoShader)
 
@@ -198,18 +197,25 @@ object Main {
 
     // Render final shader
     finalFbo.bind()
+    
+    glEnable(GL_BLEND)
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+    
+    testShader.use()
+    camera.loadGLMatrices()
+    
+    skybox.render(camera, testShader)
+    
     finalShader.use()
     ViewMode.bindGBufs(finalShader)
     //ssaoFbo.tex.bindAndSetShader(3, finalShader, "ssaoBuf");
     blurYFbo.tex.bindAndSetShader(3, finalShader, "ssaoBuf");
 
-    camera.passInUniforms(finalShader)
     camera.loadIntoTextureMatrices()
 
-    camera.loadGLMatrices()
     curLevel.setLights()
 
-    drawQuad(finalShader)
+    drawQuad(finalShader, false)/**/
 
     // Render Screen
     screenFbo.bind()
@@ -219,8 +225,10 @@ object Main {
     drawQuad(testShader)
   }
 
-  def drawQuad(shader: Shader) = {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+  def drawQuad(shader: Shader, clear: Boolean = true) = {
+    if(clear) 
+      glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
+      
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
     glOrtho(0, 1, 0, 1, 1, -1)

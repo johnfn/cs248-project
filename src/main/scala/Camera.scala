@@ -146,10 +146,6 @@ class Camera extends Entity {
     Project.gluPerspective(90, 16.0f/9.0f, nearClip, farClip)
   }
 
-  def passInUniforms(shader: Shader) {
-    glUniform1f(glGetUniformLocation(shader.id, "farClip"), farClip)
-  }
-
   def updateCamPos() {
     camX = (camR*cos(camPhi)*sin(camTheta) + centerX).asInstanceOf[Float]
     camY = (camR*sin(camPhi)*sin(camTheta) + centerY).asInstanceOf[Float]
