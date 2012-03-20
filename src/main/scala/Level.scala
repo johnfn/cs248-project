@@ -47,8 +47,6 @@ class LevelModel(val name: String)
   def height(x: Double, y: Double) = {
     val clampedX = round(max(min(xSize-1.001+SIZE, x), -SIZE))
     val clampedY = round(max(min(ySize-1.001+SIZE, y), -SIZE))
-    println("Inputs : %f %f".format(x,y))
-    println("Clamped vals %d %d".format(clampedX.toInt, clampedY.toInt))
     heightMap.valueAt(clampedX.toInt, clampedY.toInt)*zScale
   }
 
@@ -183,8 +181,20 @@ class LevelModel(val name: String)
       }
       
       // draw 'edge' walls
-      if(x == 0) {
-        drawXWall(-1.0f, yf, 0.0f, zf, texSUnit*texMap.valueAt(0, y))
+      if(x == 0 && zf > 0.0) {
+        drawXWall(-1.0f, yf, 0.0f, zf, texSUnit*texMap.valueAt(x, y))
+      }
+      
+      if(x == xSize-1 && zf > 0.0) {
+        drawXWall(xf, yf, zf, -zf, texSUnit*texMap.valueAt(x, y))
+      }
+      
+      if(y == 0 && zf > 0.0) {
+        drawYWall(xf, -1.0f, 0.0f, zf, texSUnit*texMap.valueAt(x, y))
+      }
+      
+      if(y == ySize-1 && zf > 0.0) {
+        drawYWall(xf, yf, zf, -zf, texSUnit*texMap.valueAt(x, y))
       }
     }
 
