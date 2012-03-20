@@ -24,6 +24,8 @@ class Ghost() extends VBOModelEntity {
     x = newx
     y = newy
     z = newz
+
+    println(x + " " + y + " " + z)
   }
 }
 
@@ -94,14 +96,14 @@ class Protagonist(val ghost: Ghost) extends VBOModelEntity {
 
     // Keep the z position of the crystal. This could lead to some interesting
     // puzzle solving possibilities.
-    ghost.setPosition(newx, newy, c.z)
+    ghost.setPosition(newx, newy, z)
   }
 
   def teleport(m: EntityManager, lv: Level) = {
     if (ExtendedKeyboard.released(KEY_X)) {
       val zAtGhost = lv.height(ghost.x, ghost.y)
       // Don't teleport onto something higher than you are && ensure we're on the map still.
-      if (zAtGhost <= ghost.z && lv.inBounds(ghost.x, ghost.y)) {
+      if (zAtGhost <= z && lv.inBounds(ghost.x, ghost.y)) {
         x = ghost.x
         y = ghost.y
         z = ghost.z

@@ -36,7 +36,6 @@ class ParticleManager {
       glPopMatrix()
     }
 
-
     glDisable(GL_BLEND)
     glDepthMask(true)
     glEnable(GL_CULL_FACE)
