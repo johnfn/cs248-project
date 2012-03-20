@@ -3,7 +3,6 @@ uniform sampler2D difGbuf;
 uniform sampler2D spcGbuf;
 //uniform sampler2D zBuf;
 
-uniform float farClip;
 varying vec2 texcoord;
 
 float rand(vec2 co){
@@ -12,7 +11,7 @@ float rand(vec2 co){
 
 // Using custom z buffer version
 float zSample(vec2 texc) {
-  return texture2D(nmlGbuf, texc).w-farClip;
+  return texture2D(nmlGbuf, texc).w-50.0;
 }
 
 void main()
