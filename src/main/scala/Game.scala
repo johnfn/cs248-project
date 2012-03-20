@@ -126,6 +126,7 @@ object Main {
 
   def addObjects() = {
     skybox = new SkyBox()
+    loadLevel()
   }
 
   def loadLevel() = {
