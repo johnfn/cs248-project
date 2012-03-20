@@ -196,13 +196,15 @@ object Main {
     // Render final shader
     finalFbo.bind()
 
+    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
+    
     glEnable(GL_BLEND)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
     testShader.use()
     camera.loadGLMatrices()
 
-    //skybox.render(camera, testShader)
+    skybox.render(camera, testShader)
 
     finalShader.use()
     ViewMode.bindGBufs(finalShader)
