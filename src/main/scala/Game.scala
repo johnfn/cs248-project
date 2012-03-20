@@ -85,7 +85,7 @@ object Main {
   def init(fullscreen:Boolean) = {
     Display.setTitle(GAME_TITLE)
     Display.setFullscreen(fullscreen)
-    //Display.setVSyncEnabled(true)
+    Display.setVSyncEnabled(true)
     Display.setDisplayMode(new DisplayMode(WIDTH,HEIGHT))
     Display.create()
 
