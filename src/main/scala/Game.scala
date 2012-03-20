@@ -140,7 +140,7 @@ object Main {
     manager.add(new Block(9, 8, 0))
     manager.add(new Enemy(6, 6))
 
-    partmanager.add(new Particle(5.0f, 0.0f, 1.0f))
+    //partmanager.add(new Particle(5.0f, 5.0f, 1.0f))
 
     skybox = new SkyBox()
   }
