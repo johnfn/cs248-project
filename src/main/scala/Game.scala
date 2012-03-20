@@ -125,6 +125,10 @@ object Main {
   }
 
   def addObjects() = {
+    skybox = new SkyBox()
+  }
+
+  def loadLevel() = {
     val ghost = new Ghost()
 
     curLevel = new Level("level3")
@@ -136,15 +140,6 @@ object Main {
     manager.add(curLevel)
     manager.add(ghost)
     manager.add(new Protagonist(ghost))
-    //manager.add(new Block(8, 8, 0))
-    //manager.add(new Block(8, 9, 0))
-    //manager.add(new Block(9, 9, 0))
-    //manager.add(new Block(9, 8, 0))
-    //manager.add(new Enemy(6, 6))
-
-    //partmanager.add(new Particle(5.0f, 5.0f, 1.0f))
-
-    skybox = new SkyBox()
   }
 
   def gameOver() = {
