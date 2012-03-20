@@ -27,6 +27,7 @@ class LevelModel(val name: String)
   val SIZE = 0.50f
 
   var indexCount = 0
+  var newEntities: List[Entity] = List()
 
   val texMap = new ImageMapObjMap("/levels/"+name+"_t.png",        
     Map(
@@ -37,7 +38,9 @@ class LevelModel(val name: String)
       0xff0000->4,
       0xff00ff->5,
       0xffff00->6,
-      0xffffff->7
+      0xffffff->7,
+      0x202020->8, //Crystal
+      0x000050->9  //Block
     )
   )
 
@@ -57,6 +60,20 @@ class LevelModel(val name: String)
     (floor(x + 0.5f), floor(y + 0.5f))
   }
   */
+
+  for (x <- 0 until xSize; y <- 0 until ySize) {
+    val color = texMap.valueAt(x, y)
+    val height = heightMap.valueAt(x, y) * zScale
+
+    // Special case colors. Create new entities and append to list.
+    if (color == 0) {
+
+    } else if (color == 8) {
+      newEntities = (new Crystal(x, y, height)) :: newEntities
+    } else if (color == 9) {
+      newEntities = (new Block(x, y, height)) :: newEntities
+    }
+  }
 
   def getVertices() = {
     // insert one vertex per pixel in the heightmap
@@ -158,6 +175,7 @@ class LevelModel(val name: String)
       
       // paint floor tiles
       val floorS0 = texSUnit*texMap.valueAt(x, y)
+
       vertVec ++= floorCorners.map { case(dx, dy) =>
         Vertex(
           xf+dx, yf+dy, zf,
@@ -206,6 +224,7 @@ class LevelModel(val name: String)
 
 class Level(val name: String) extends VBOModelEntity {
   val model = new LevelModel(name)
+  var newEntities: List[Entity] = model.newEntities
 
   // origin of the model in WORLD SPACE
   x = 0f

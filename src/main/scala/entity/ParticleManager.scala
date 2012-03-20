@@ -21,21 +21,23 @@ class ParticleManager {
 
   def renderAll(cam: Camera, shader: Shader) = {
     import GL11._
+    import java.nio._
+    import org.lwjgl._
 
+    glDisable(GL_CULL_FACE)
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
     glEnable(GL_BLEND)
     glDepthMask(false)
 
     entities.foreach { part =>
       glPushMatrix()
-      glLoadIdentity()
-
-      glMultMatrix(cam.facingCamMat())
-
+      glColor4f(0.0f, 0.0f, 0.0f, 0.0f)
       part.renderGL(shader)
       glPopMatrix()
     }
 
     glDisable(GL_BLEND)
     glDepthMask(true)
+    glEnable(GL_CULL_FACE)
   }
 }

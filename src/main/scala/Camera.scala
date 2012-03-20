@@ -44,14 +44,14 @@ class Camera extends Entity {
     glLoadIdentity()
     multModelViewMatrix()
 
-    storeViewMat()
+    viewMatrix = storeViewMat()
   }
 
   def storeViewMat() = {
     import java.nio._
     import org.lwjgl._
 
-    viewMatrix = new Matrix4f()
+    var viewMatrix: Matrix4f = new Matrix4f()
     var buf: FloatBuffer = BufferUtils.createFloatBuffer(16 * 4);
 
     // Get the current model view matrix from OpenGL.
@@ -78,40 +78,77 @@ class Camera extends Entity {
     viewMatrix.m31 = buf.get(13)
     viewMatrix.m32 = buf.get(14)
     viewMatrix.m33 = buf.get(15)
+
+    viewMatrix
   }
 
-  def facingCamMat() = {
+  def facingCamMat(px: Float, py: Float, pz: Float) = {
     import java.nio._
     import org.lwjgl._
-
-    var result = new Matrix4f(viewMatrix)
-
-     val d: Float = math.sqrt(result.m00 * result.m00 +
-                              result.m01 * result.m01 +
-                              result.m02 * result.m02 ).asInstanceOf[Float]
-
-    result.m00 = d
-    result.m11 = d
-    result.m22 = d
-
-    result.m01 = 0.0f
-    result.m02 = 0.0f
-    result.m03 = 0.0f
-    result.m12 = 0.0f
-    result.m13 = 0.0f
-    result.m23 = 0.0f
-
-    result.m10 = 0.0f
-    result.m20 = 0.0f
-    result.m21 = 0.0f
-
-    result.m33 = 1.0f
+    import org.lwjgl.util.vector._
 
     var buf: FloatBuffer = BufferUtils.createFloatBuffer(16 * 4);
-    result.store(buf)
-    buf.rewind()
+    var viewmat: Matrix4f = storeViewMat()
 
-    buf
+    // Get the current model view matrix from OpenGL.
+    glGetFloat(GL_MODELVIEW_MATRIX, buf);
+
+    var camPos = new Vector3f(-buf.get(12), -buf.get(13), -buf.get(14))
+    var camUp = new Vector3f(buf.get(1), buf.get(5), buf.get(9))
+
+    viewmat.m30 = 0.0f
+    viewmat.m31 = 0.0f
+    viewmat.m32 = 0.0f
+
+    viewmat.transpose()
+
+    camPos.x = viewmat.m00 * camPos.x + viewmat.m10 * camPos.y + viewmat.m20 * camPos.z
+    camPos.y = viewmat.m01 * camPos.x + viewmat.m11 * camPos.y + viewmat.m21 * camPos.z
+    camPos.z = viewmat.m02 * camPos.x + viewmat.m12 * camPos.y + viewmat.m22 * camPos.z
+
+
+    var result: Matrix4f = new Matrix4f()
+    var right: Vector3f = new Vector3f()
+    var look = new Vector3f( -px + camPos.x
+                           , -py + camPos.y
+                           , -pz + camPos.z)
+    look.normalise();
+
+    var upvec = camUp
+
+    /* right = look x upvec */
+    Vector3f.cross(upvec, look, right);
+    right.normalise();
+
+    /* Recompute upvec as: upvec = right x look */
+    Vector3f.cross(look, right, upvec);
+
+    result.m00 = right.x;
+    result.m10 = right.y;
+    result.m20 = right.z;
+    result.m30 = 0.0f
+
+    result.m01 = up.x;
+    result.m11 = up.y;
+    result.m21 = up.z;
+    result.m31 = 0.0f
+
+    result.m02 = look.x;
+    result.m12 = look.y;
+    result.m22 = look.z;
+    result.m32 = 0.0f
+
+    result.m03 = px
+    result.m13 = py
+    result.m23 = pz
+    result.m33 = 1.0f
+
+
+    var resbuf: FloatBuffer = BufferUtils.createFloatBuffer(16 * 4);
+    result.store(resbuf)
+    resbuf.rewind()
+
+    resbuf
   }
 
   def loadIntoTextureMatrices() = {

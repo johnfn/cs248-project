@@ -45,5 +45,5 @@ class Particle(p_x: Float, p_y: Float, p_z: Float) extends VBOModelEntity {
 
 	val model = new ParticleModel(x, y, z)
 
-	override def traits() = List("particle")
+	override def traits() = List("render", "particle")
 }

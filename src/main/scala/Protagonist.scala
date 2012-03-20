@@ -24,6 +24,8 @@ class Ghost() extends VBOModelEntity {
     x = newx
     y = newy
     z = newz
+
+    println(x + " " + y + " " + z)
   }
 }
 
@@ -74,7 +76,7 @@ class Protagonist(val ghost: Ghost) extends VBOModelEntity {
     if(List(KEY_W, KEY_S, KEY_A, KEY_D).map(isKeyDown).contains(true)) {
       Sound.playSnd("move")
     }
-    
+
     if (isKeyDown(KEY_W)) newx += 1.0f
     if (isKeyDown(KEY_S)) newx -= 1.0f
 
@@ -92,21 +94,23 @@ class Protagonist(val ghost: Ghost) extends VBOModelEntity {
   }
 
   def moveGhost(m: EntityManager, lv: Level) = {
-    val c:Crystal = m.entities.filter(_.traits.contains("crystal")).head.asInstanceOf[Crystal]
+    m.entities.filter(_.traits.contains("crystal")).headOption.map { c =>
+      val cry = c.asInstanceOf[Crystal]
 
-    val newx = (c.x - x) + c.x
-    val newy = (c.y - y) + c.y
+      val newx = (cry.x - x) + cry.x
+      val newy = (cry.y - y) + cry.y
 
-    // Keep the z position of the crystal. This could lead to some interesting
-    // puzzle solving possibilities.
-    ghost.setPosition(newx, newy, c.z)
+      // Keep the z position of the crystal. This could lead to some interesting
+      // puzzle solving possibilities.
+      ghost.setPosition(newx, newy, z)
+    }
   }
 
   def teleport(m: EntityManager, lv: Level) = {
     if (ExtendedKeyboard.released(KEY_X)) {
       val zAtGhost = lv.height(ghost.x, ghost.y)
       // Don't teleport onto something higher than you are && ensure we're on the map still.
-      if (zAtGhost <= ghost.z && lv.inBounds(ghost.x, ghost.y)) {
+      if (zAtGhost <= z && lv.inBounds(ghost.x, ghost.y)) {
         x = ghost.x
         y = ghost.y
         z = ghost.z
@@ -120,7 +124,7 @@ class Protagonist(val ghost: Ghost) extends VBOModelEntity {
 
   def hurt() = {
     Sound.playSnd("explode")
-    
+
     x = safe_x
     y = safe_y
     z = safe_z
@@ -137,7 +141,7 @@ class Protagonist(val ghost: Ghost) extends VBOModelEntity {
   def updateGravGun(m: EntityManager) = {
     if (Mouse.isButtonDown(0)) {
       mouseDownFrames += 1
-      
+
       gravGunObj match {
         case Some(ent) => {
           m.pickCoordinate().map { case(x, y) => ent.setPosition(m, x, y) }

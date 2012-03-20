@@ -125,24 +125,22 @@ object Main {
   }
 
   def addObjects() = {
+    skybox = new SkyBox()
+    loadLevel()
+  }
+
+  def loadLevel() = {
     val ghost = new Ghost()
 
-    curLevel = new Level("level1")
+    curLevel = new Level("level3")
+    for (e <- curLevel.newEntities) {
+      manager.add(e)
+    }
 
     manager.add(camera)
     manager.add(curLevel)
-    manager.add(new Crystal(3.0f, 3.0f, 0.0f))
     manager.add(ghost)
     manager.add(new Protagonist(ghost))
-    manager.add(new Block(8, 8, 0))
-    manager.add(new Block(8, 9, 0))
-    manager.add(new Block(9, 9, 0))
-    manager.add(new Block(9, 8, 0))
-    manager.add(new Enemy(6, 6))
-
-    partmanager.add(new Particle(5.0f, 0.0f, 1.0f))
-
-    skybox = new SkyBox()
   }
 
   def gameOver() = {
@@ -159,7 +157,7 @@ object Main {
 
   def renderGame() = {
     glDisable(GL_BLEND)
-    
+
     // Render G - buffers
     gbufFbo.bind()
     gbufShader.use()
@@ -168,9 +166,9 @@ object Main {
     //TODO move into skybox.render()
 
     camera.loadGLMatrices()
-    
+
     manager.renderAll(gbufShader)
-    partmanager.renderAll(camera, gbufShader)
+    //partmanager.renderAll(camera, gbufShader)
 
     // Render SSAO pass
     ssaoFbo.bind()
@@ -197,15 +195,15 @@ object Main {
 
     // Render final shader
     finalFbo.bind()
-    
+
     glEnable(GL_BLEND)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-    
+
     testShader.use()
     camera.loadGLMatrices()
-    
-    skybox.render(camera, testShader)
-    
+
+    //skybox.render(camera, testShader)
+
     finalShader.use()
     ViewMode.bindGBufs(finalShader)
     //ssaoFbo.tex.bindAndSetShader(3, finalShader, "ssaoBuf");
@@ -227,9 +225,9 @@ object Main {
   }
 
   def drawQuad(shader: Shader, clear: Boolean = true) = {
-    if(clear) 
+    if(clear)
       glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
-      
+
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
     glOrtho(0, 1, 0, 1, 1, -1)
