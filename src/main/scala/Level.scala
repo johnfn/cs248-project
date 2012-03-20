@@ -16,7 +16,7 @@ class LevelModel(val name: String)
     new ImageTexture("/textures/terrain_d.png"),
     new ImageTexture("/textures/terrain_s.png"))
 {
-  val heightMap = new ImageMapGrayscale("/levels/"+name+"_h.png")
+  val heightMap = new ImageMapGrayscale("/levels/"+name+"_h.png", 500)
   val deltaXMap = heightMap.deltaXMap
   val deltaYMap = heightMap.deltaYMap
 
@@ -29,7 +29,7 @@ class LevelModel(val name: String)
   var indexCount = 0
   var newEntities: List[Entity] = List()
 
-  val texMap = new ImageMapObjMap("/levels/"+name+"_t.png",        
+  val texMap = new ImageMapObjMap("/levels/"+name+"_t.png",
     Map(
       0x000000->0,
       0x0000ff->1,
@@ -84,11 +84,11 @@ class LevelModel(val name: String)
       (-SIZE, -SIZE), (SIZE, -SIZE), (SIZE, SIZE), (-SIZE, SIZE))
 
     var vertVec = new scala.collection.immutable.VectorBuilder[Vertex]()
-    
+
     // get texture "s" coord
     val texSUnit = 1.0f/8.0f
     val texTUnit = 1.0f/3.0f
-  
+
     def drawXVertTile(xf: Float, yf: Float,
                       tileZTop: Float, tileZHeight: Float, texT0Units: Float,
                       nx: Float, texS0: Float) =
@@ -101,7 +101,7 @@ class LevelModel(val name: String)
           (texT0Units+(1.0f-tileZHeight)+(dz+SIZE)*tileZHeight)*texTUnit)
       }
     }
-    
+
     def drawYVertTile(xf: Float, yf: Float,
                       tileZTop: Float, tileZHeight: Float, texT0Units: Float,
                       ny: Float, texS0: Float) =
@@ -114,7 +114,7 @@ class LevelModel(val name: String)
           (texT0Units+(1.0f-tileZHeight)+(dz+SIZE)*tileZHeight)*texTUnit)
       }
     }
-    
+
     // sub 'x' or 'y' for 'u'
     def commonValues(zf: Float, dzdu: Float) = {
       val nu = if(dzdu > 0) -1.0f else 1.0f
@@ -127,10 +127,10 @@ class LevelModel(val name: String)
 
       (nu, zBot, zHeight, topTileHeight, topTileZTop)
     }
-    
+
     def drawXWall(xf: Float, yf: Float, zf: Float, dzdx: Float, texS0: Float) =
     {
-      val (nx, zBot, zHeight, topTileHeight, topTileZTop) = 
+      val (nx, zBot, zHeight, topTileHeight, topTileZTop) =
         commonValues(zf, dzdx)
 
       // draw the top vertical tile
@@ -145,12 +145,12 @@ class LevelModel(val name: String)
         }
       }
     }
-    
+
     def drawYWall(xf: Float, yf: Float, zf: Float, dzdy: Float, texS0: Float) =
     {
-      val (ny, zBot, zHeight, topTileHeight, topTileZTop) = 
+      val (ny, zBot, zHeight, topTileHeight, topTileZTop) =
         commonValues(zf, dzdy)
-      
+
       // draw the top vertical tile
       drawYVertTile(xf, yf, topTileZTop, topTileHeight, 1, ny, texS0)
 
@@ -163,7 +163,7 @@ class LevelModel(val name: String)
         }
       }
     }
-    
+
     for(y <- 0 until ySize; x <- 0 until xSize) {
       val xf = x.toFloat
       val yf = y.toFloat
@@ -172,7 +172,7 @@ class LevelModel(val name: String)
       val dzdy = deltaYMap.valueAt(x,y)*zScale
 
       val hc = heightMap.valueAt(x,y).asInstanceOf[Byte]
-      
+
       // paint floor tiles
       val floorS0 = texSUnit*texMap.valueAt(x, y)
 
@@ -184,7 +184,7 @@ class LevelModel(val name: String)
           // slightly inwards, so that little white dots don't appear.
           floorS0+(dx+SIZE)*texSUnit - dx/(SIZE * 100), (2+dy+SIZE)*texTUnit - dy/(SIZE * 100))
       }
-      
+
       // paint x facing walls
       if(dzdx != 0) {
         // use texture of "higher" tile"
@@ -197,20 +197,20 @@ class LevelModel(val name: String)
         val texS0 = texSUnit*texMap.valueAt(x, if(dzdy < 0) y else y+1)
         drawYWall(xf, yf, zf, dzdy, texS0)
       }
-      
+
       // draw 'edge' walls
       if(x == 0 && zf > 0.0) {
         drawXWall(-1.0f, yf, 0.0f, zf, texSUnit*texMap.valueAt(x, y))
       }
-      
+
       if(x == xSize-1 && zf > 0.0) {
         drawXWall(xf, yf, zf, -zf, texSUnit*texMap.valueAt(x, y))
       }
-      
+
       if(y == 0 && zf > 0.0) {
         drawYWall(xf, -1.0f, 0.0f, zf, texSUnit*texMap.valueAt(x, y))
       }
-      
+
       if(y == ySize-1 && zf > 0.0) {
         drawYWall(xf, yf, zf, -zf, texSUnit*texMap.valueAt(x, y))
       }
