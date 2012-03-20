@@ -187,7 +187,7 @@ class Camera extends Entity {
     camX = (camR*cos(camPhi)*sin(camTheta) + centerX).asInstanceOf[Float]
     camY = (camR*sin(camPhi)*sin(camTheta) + centerY).asInstanceOf[Float]
     camZ = (camR*cos(camTheta) + centerZ).asInstanceOf[Float]
-    
+
     if(Main.curLevel != null) {
       val minZ = Main.curLevel.height(camX, camY) + 2.0f
       camZ = max(camZ, minZ)
@@ -248,8 +248,8 @@ class Camera extends Entity {
       camPhi   = (camPhi % (2*Pi)).asInstanceOf[Float]
 
       //println("Camera (r,t,p) = (%f,%f,%f)".format(camR, camTheta, camPhi))
-      
-      
+
+
       // Set the cursor position and reset the delta tracker
       Mouse.setCursorPosition(Mouse.getX-dx, Mouse.getY-dy)
       Mouse.getDX()

@@ -132,7 +132,7 @@ object Main {
   def loadLevel() = {
     val ghost = new Ghost()
 
-    curLevel = new Level("level3")
+    curLevel = new Level("level1")
     for (e <- curLevel.newEntities) {
       manager.add(e)
     }
@@ -197,7 +197,7 @@ object Main {
     finalFbo.bind()
 
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
-    
+
     glEnable(GL_BLEND)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
@@ -220,7 +220,7 @@ object Main {
     // Render Screen
     screenFbo.bind()
     testShader.use()
-    
+
     ViewMode.bindForTestShader(testShader)
 
     drawQuad(testShader)

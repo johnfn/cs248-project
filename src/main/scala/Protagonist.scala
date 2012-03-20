@@ -30,9 +30,10 @@ class Ghost() extends VBOModelEntity {
 }
 
 class Protagonist(val ghost: Ghost) extends VBOModelEntity {
-  val JUMP_HEIGHT = .2f
+  val JUMP_HEIGHT = .5f
   val GRAVITY = 0.02f
 
+  var yacc = 0.0f
   var gravGunObj: Option[Moveable] = None
   x = 0.0f
   y = 0.0f
@@ -47,7 +48,7 @@ class Protagonist(val ghost: Ghost) extends VBOModelEntity {
 
   override def traits() = List("protagonist", "render", "update")
 
-  def move(m: EntityManager, lv: Level) = {
+  def move(m: EntityManager, lv: Level) {
     val onGround:Boolean = (z <= m.height(x, y, this))
 
     var newx = x
@@ -63,8 +64,17 @@ class Protagonist(val ghost: Ghost) extends VBOModelEntity {
         newz = m.height(x, y, this)
       }
 
+      // if we're standing on lava right now...
+
+      // so many things wrong with this line of code that i dont even want to talk about it.
+      if (lv.model.texMap.valueAt(x.asInstanceOf[Int], y.asInstanceOf[Int]) == 4) {
+        hurt()
+        return
+      }
+      yacc = 0.0f
     } else {
-      vz -= GRAVITY
+      yacc += GRAVITY
+      vz -= yacc
     }
 
     newz += vz
