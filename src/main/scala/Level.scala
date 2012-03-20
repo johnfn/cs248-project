@@ -39,7 +39,8 @@ class LevelModel(val name: String)
       0xff00ff->5,
       0xffff00->6,
       0xffffff->7,
-      0x202020->8 //Crystal
+      0x202020->8, //Crystal
+      0x000050->9  //Block
     )
   )
 
@@ -62,12 +63,15 @@ class LevelModel(val name: String)
 
   for (x <- 0 until xSize; y <- 0 until ySize) {
     val color = texMap.valueAt(x, y)
+    val height = heightMap.valueAt(x, y) * zScale
 
     // Special case colors. Create new entities and append to list.
     if (color == 0) {
 
     } else if (color == 8) {
-      newEntities = (new Crystal(x, y, heightMap.valueAt(x, y) * zScale)) :: newEntities
+      newEntities = (new Crystal(x, y, height)) :: newEntities
+    } else if (color == 9) {
+      newEntities = (new Block(x, y, height)) :: newEntities
     }
   }
 

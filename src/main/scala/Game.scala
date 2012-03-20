@@ -127,7 +127,7 @@ object Main {
   def addObjects() = {
     val ghost = new Ghost()
 
-    curLevel = new Level("level2")
+    curLevel = new Level("level3")
     for (e <- curLevel.newEntities) {
       manager.add(e)
     }
