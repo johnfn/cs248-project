@@ -36,70 +36,6 @@ trait Moveable extends Entity {
 	}
 }
 
-class CubeModel(val x: Float, val y: Float, val z: Float) extends VBOModel {
-	val name = "cubemodel"
-
-	override def getVertices() = {
-		var vertices = List(
-		    // Front face
-	    	List(
-			    List(-1.0f, -1.0f,  1.0f),
-			    List( 1.0f, -1.0f,  1.0f),
-			    List( 1.0f,  1.0f,  1.0f),
-			    List(-1.0f,  1.0f,  1.0f)
-	    	),
-
-		    // Back face
-		    List(
-			    List(-1.0f, -1.0f, -1.0f),
-			    List(-1.0f,  1.0f, -1.0f),
-			    List( 1.0f,  1.0f, -1.0f),
-			    List( 1.0f, -1.0f, -1.0f)
-		    ),
-
-		    // Top face
-		    List(
-			    List(-1.0f,  1.0f, -1.0f),
-			    List(-1.0f,  1.0f,  1.0f),
-			    List( 1.0f,  1.0f,  1.0f),
-			    List( 1.0f,  1.0f, -1.0f)
-		    ),
-
-		    // Bottom face
-		    List(
-			    List(-1.0f, -1.0f, -1.0f),
-			    List( 1.0f, -1.0f, -1.0f),
-			    List( 1.0f, -1.0f,  1.0f),
-			    List(-1.0f, -1.0f,  1.0f)
-		    ),
-
-		    // Right face
-		    List(
-			    List( 1.0f, -1.0f, -1.0f),
-			    List( 1.0f,  1.0f, -1.0f),
-			    List( 1.0f,  1.0f,  1.0f),
-			    List( 1.0f, -1.0f,  1.0f)
-		    ),
-
-		    // Left face
-		    List(
-			    List(-1.0f, -1.0f, -1.0f),
-			    List(-1.0f, -1.0f,  1.0f),
-			    List(-1.0f,  1.0f,  1.0f),
-			    List(-1.0f,  1.0f, -1.0f)
-		    )
-		  );
-
-		vertices.map(face =>
-			face.map(vertex =>
-				Vertex(vertex(0) / 2.0f, vertex(1) / 2.0f, vertex(2) / 2.0f - 0.5f,
-					   0, 0, 1,
-					   0, 0))).flatten(identity)
-	}
-
-	override def getIndices() = 0 until 24
-}
-
 class Block(block_x: Float, block_y: Float, block_z: Float) extends VBOModelEntity with Moveable {
 	val WIDTH = 0.5f
 
@@ -107,7 +43,7 @@ class Block(block_x: Float, block_y: Float, block_z: Float) extends VBOModelEnti
 	y = block_y
 	z = block_z + 1.0f
 
-	val model = new SkyModel(x, y, z, 1.0f, "/textures/skybox.jpg")
+	val model = new SkyModel(x, y, z, 1.0f, "/textures/crate.png")
 
 	override def update(m: EntityManager) = {
 		if (!selected) {
