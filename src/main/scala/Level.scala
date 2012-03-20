@@ -36,11 +36,11 @@ class LevelModel(val name: String)
       0x00ff00->2,
       0x00ffff->3,
       0xff0000->4,
-      0xff00ff->5,
-      0xffff00->6,
+      //0xff00ff->5,
+      //0xffff00->6,
       0xffffff->7,
-      0x202020->8, //Crystal
-      0x000050->9  //Block
+      0x202020->5,//8, //Crystal
+      0x000050->6//9  //Block
     )
   )
 
@@ -60,9 +60,9 @@ class LevelModel(val name: String)
     // Special case colors. Create new entities and append to list.
     if (color == 0) {
 
-    } else if (color == 8) {
+    } else if (color == 5) {
       newEntities = (new Crystal(x, y, height)) :: newEntities
-    } else if (color == 9) {
+    } else if (color == 6) {
       newEntities = (new Block(x, y, height)) :: newEntities
     }
   }

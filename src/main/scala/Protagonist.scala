@@ -18,7 +18,9 @@ class Ghost() extends VBOModelEntity {
   x = 1.0f
   y = 0.0f
   z = 0.0f
-  val model = new SquareModel(x, y, z)//, List(100, 0, 0))
+
+  //1.05f instead of 1.00f is an awesome hack that stops z-fighting when the ghost is in a wall.
+  val model = new SkyModel(x, y, z, 1.05f, "/textures/ghost.png", 1.0f)
 
   def setPosition(newx: Float, newy: Float, newz: Float) = {
     x = newx
@@ -103,7 +105,7 @@ class Protagonist(val ghost: Ghost) extends VBOModelEntity {
   def hasWon(m: EntityManager) = {
     val lv:Level = m.entities.filter(_.traits.contains("level")).head.asInstanceOf[Level]
 
-    lv.model.texMap.valueAt(x.asInstanceOf[Int], y.asInstanceOf[Int]) == 7
+    lv.model.texMap.valueAt(x.asInstanceOf[Int], y.asInstanceOf[Int]) == 7 && (z <= m.height(x, y, this))
   }
 
   def moveGhost(m: EntityManager, lv: Level) = {
