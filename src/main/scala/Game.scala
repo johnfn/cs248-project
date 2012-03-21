@@ -71,7 +71,7 @@ object Main {
   val finalShader = new Shader("minimal", "final")
 
   var curLevel : Level = null
-  var currentLevelNum = 2
+  var currentLevelNum = 1
 
   def playMusic() = {
     val fis:FileInputStream      = new FileInputStream("./src/main/resources/sounds/soundtrack.mp3")
